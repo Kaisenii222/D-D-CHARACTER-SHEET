@@ -1,0 +1,2437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LOW//LIFE — Character Creator</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&family=Silkscreen:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#030303; --bg2:#060606; --bg3:#0a0a0a; --bg4:#0e0e0e;
+  --s1:#131313; --s2:#1a1a1a; --s3:#222; --s4:#2c2c2c; --s5:#383838;
+  --g1:#444; --g2:#5a5a5a; --g3:#787878; --g4:#9c9c9c; --g5:#bfbfbf;
+  --white:#e2e2e2;
+  --red:#c41c1c; --red2:#8a1111; --red3:#380606; --red-glow:rgba(196,28,28,0.75);
+  --border:rgba(255,255,255,0.05); --border2:rgba(255,255,255,0.1); --border3:rgba(255,255,255,0.15);
+  --hl:rgba(255,255,255,0.025);
+  --px:'Press Start 2P',monospace; --vt:'VT323',monospace; --sk:'Silkscreen',monospace;
+  --theme-accent:#c41c1c; --theme-accent-glow:rgba(196,28,28,0.6);
+  --race-color:#9c9c9c; --race-color-rgb:156,156,156;
+  --class-color:#9c9c9c; --class-color-rgb:156,156,156;
+}
+body.blood-moon{
+  --bg:#0a0000;--bg2:#120202;--bg4:#1a0303;
+  --s1:#160505;--s2:#200808;--s3:#2e0c0c;--s4:#4a0f0f;--s5:#6e1616;
+  --g1:#7a2020;--g2:#9a3030;--g3:#c05050;--g4:#e08080;--g5:#ffbaba;
+  --white:#ffd1d1;--red:#c41c1c;--red2:#8a1111;--red3:#380606;--red-glow:rgba(196,28,28,0.75);
+  --theme-accent:#c41c1c;--theme-accent-glow:rgba(196,28,28,0.6);
+}
+body.eclipse{
+  --bg:#05030a;--bg2:#0a0614;--bg4:#120a1e;
+  --s1:#160d20;--s2:#1e1230;--s3:#26183a;--s4:#3a2255;--s5:#5a3880;
+  --g1:#5a4070;--g2:#7a5a90;--g3:#9a7ab0;--g4:#bfa0d0;--g5:#dfcaf0;
+  --white:#f0e6ff;
+  --red:#b060e0;--red2:#7a3a9a;--red3:#2a0a44;--red-glow:rgba(176,96,224,0.75);
+  --border:rgba(200,160,255,0.05);--border2:rgba(200,160,255,0.1);--border3:rgba(200,160,255,0.15);
+  --theme-accent:#b060e0;--theme-accent-glow:rgba(176,96,224,0.6);
+}
+body.azure-moon{
+  --bg:#00060a;--bg2:#010c14;--bg4:#02141e;
+  --s1:#051520;--s2:#0a2030;--s3:#0f2c40;--s4:#163c55;--s5:#1e5070;
+  --g1:#256080;--g2:#3080a0;--g3:#50a0c0;--g4:#80c4e0;--g5:#c0e8f8;
+  --white:#e8f8ff;
+  --red:#20b0e0;--red2:#1078a0;--red3:#003050;--red-glow:rgba(32,176,224,0.75);
+  --border:rgba(160,220,255,0.05);--border2:rgba(160,220,255,0.1);--border3:rgba(160,220,255,0.15);
+  --theme-accent:#20b0e0;--theme-accent-glow:rgba(32,176,224,0.6);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  background:var(--bg); color:var(--g5); font-family:var(--vt); font-size:16px;
+  min-height:100vh; overflow-x:hidden;
+  cursor:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16'%3E%3Cpath fill='%23aaaaaa' d='M0 0l4 12 3-4 5 8 2-1-5-8 4-3z'/%3E%3C/svg%3E") 0 0,crosshair;
+}
+body::before{
+  content:''; position:fixed; inset:0; pointer-events:none; z-index:9900;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.15) 2px,rgba(0,0,0,0.15) 3px);
+  animation:scanMove 18s linear infinite;
+}
+body::after{
+  content:''; position:fixed; inset:0; pointer-events:none; z-index:8000;
+  box-shadow: inset 0 0 180px rgba(0,0,0,0.95), inset 0 0 60px rgba(0,0,0,0.8);
+}
+@keyframes scanMove{0%{background-position:0 0}100%{background-position:0 60px}}
+#bgCanvas{position:fixed;inset:0;z-index:0;pointer-events:none;}
+#mist-wrap{position:fixed;inset:0;pointer-events:none;z-index:1;overflow:hidden}
+.mist-layer{
+  position:absolute; width:200%; height:200%;
+  background:radial-gradient(ellipse 60% 40% at 30% 50%, rgba(140,145,155,0.06) 0%, rgba(50, 5, 5, 0.02) 40%, transparent 70%);
+  animation:mistDrift linear infinite;
+}
+.mist-layer:nth-child(1){animation-duration:40s;top:-50%;left:-20%}
+.mist-layer:nth-child(2){animation-duration:65s;top:-30%;left:-60%;animation-delay:-20s;opacity:.7}
+.mist-layer:nth-child(3){animation-duration:50s;top:-70%;left:10%;animation-delay:-35s;opacity:.5}
+@keyframes mistDrift{0%{transform:translate(0,0) rotate(0deg)}50%{transform:translate(8%,4%) rotate(1deg)}100%{transform:translate(0,0) rotate(0deg)}}
+#trailCanvas{position:fixed;inset:0;pointer-events:none;z-index:9901}
+::-webkit-scrollbar{width:4px;background:var(--bg)}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.08)}
+#topnav{
+  position:fixed;top:0;left:0;right:0;z-index:500;
+  background:rgba(3,3,3,0.96);
+  border-bottom:1px solid var(--s4);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 2rem;height:50px;
+  box-shadow:0 4px 30px rgba(0,0,0,0.9);
+}
+#topnav::after{
+  content:'';position:absolute;bottom:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,0.06),transparent);
+}
+.nav-brand{font-family:var(--px);font-size:.55rem;color:var(--g5);letter-spacing:2px; text-shadow: 0 0 15px rgba(255,255,255,0.3);}
+.nav-brand span{color:var(--red); text-shadow: 0 0 15px var(--red-glow), 0 0 30px var(--red-glow);}
+.nav-steps{display:flex;gap:2px}
+.nav-step{font-family:var(--px);font-size:.28rem;padding:.28rem .5rem;border:1px solid var(--s4);color:var(--g1);letter-spacing:.06em;transition:all .15s;cursor:default}
+.nav-step.done{border-color:var(--s5);color:var(--g3);background:rgba(255,255,255,0.02)}
+.nav-step.active{border-color:var(--g3);color:var(--white);background:rgba(255,255,255,0.04); text-shadow: 0 0 15px rgba(255,255,255,0.5), 0 0 25px rgba(255,255,255,0.3);}
+.page{min-height:100vh;padding:80px 0 80px;display:none;animation:pageFadeIn .4s ease; position: relative; z-index: 10;}
+.page.active{display:block}
+@keyframes pageFadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.page-inner{max-width:920px;margin:0 auto;padding:2rem 1.5rem}
+.ph-tag{font-family:var(--px);font-size:.34rem;color:var(--g2);letter-spacing:.12em;margin-bottom:.3rem}
+.ph-title{font-family:var(--px);font-size:1rem;color:var(--white);line-height:1.5;text-shadow: 0 0 25px rgba(255,255,255,0.4), 0 0 40px rgba(255,255,255,0.2), 2px 2px 0 #000; animation:idleFloat 6s ease-in-out infinite}
+.ph-lore{font-family:var(--vt);font-size:1rem;color:var(--g3);margin-top:.4rem;line-height:1.75;font-style:italic}
+.ph-line{height:1px;margin:.7rem 0 1.5rem;background:linear-gradient(90deg,rgba(255,255,255,0.1),transparent)}
+@keyframes idleFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+.sys-panel{
+  background:linear-gradient(160deg,var(--s1),var(--bg4));
+  border:1px solid var(--s4);border-left:3px solid var(--s5);
+  position:relative;overflow:hidden;padding:1.2rem;margin-bottom:1rem;
+}
+.sys-panel::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,0.07),transparent);
+}
+.panel-title{
+  font-family:var(--px);font-size:.4rem;color:var(--g5);margin-bottom:.85rem;
+  display:flex;align-items:center;gap:.4rem;text-shadow: 0 0 15px rgba(255,255,255,0.3), 1px 1px 0 #000;
+}
+.panel-title::before{content:'■';color:var(--g2)}
+.panel-title::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,rgba(255,255,255,0.08),transparent)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:.6rem}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.55rem}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:.55rem}
+@media(max-width:700px){.grid4{grid-template-columns:1fr 1fr 1fr}.grid3{grid-template-columns:1fr 1fr}}
+@media(max-width:500px){.grid4,.grid3,.grid2{grid-template-columns:1fr}}
+.choice-card{
+  background:linear-gradient(148deg,var(--s1),var(--bg4));
+  border:1px solid var(--s4);padding:1rem;
+  cursor:pointer;transition:all .15s;position:relative;overflow:hidden;
+}
+.choice-card:hover{border-color:var(--g1);background:linear-gradient(148deg,var(--s2),var(--s1))}
+.choice-card.selected{border:1px solid var(--g4);border-left:3px solid var(--white);background:rgba(255,255,255,0.035)}
+.cc-icon{font-size:1.4rem;margin-bottom:.3rem;display:block}
+.cc-name{font-family:var(--px);font-size:.44rem;color:var(--g5);margin-bottom:.18rem;letter-spacing:.04em; transition: text-shadow 0.2s; text-shadow: 0 0 12px rgba(255,255,255,0.15);}
+.choice-card:hover .cc-name{text-shadow: 0 0 18px rgba(255,255,255,0.4), 0 0 30px rgba(255,255,255,0.2);}
+.cc-desc{font-family:var(--vt);font-size:.9rem;color:var(--g3);line-height:1.65}
+.cc-tag{font-family:var(--px);font-size:.26rem;color:var(--g2);margin-top:.3rem;letter-spacing:.04em;line-height:1.8}
+.cc-diff{font-family:var(--px);font-size:.24rem;margin-top:.3rem;letter-spacing:.06em;padding:.15rem .35rem;display:inline-block;border:1px solid currentColor}
+.diff-beg{color:#5a8a5a}.diff-int{color:#8a7a3a}.diff-adv{color:#8a3a3a}
+.choice-card.selected .cc-name{color:var(--white); text-shadow: 0 0 20px rgba(255,255,255,0.6), 0 0 35px rgba(255,255,255,0.3);}
+.cc-items{margin-top:.45rem;border-top:1px solid var(--s4);padding-top:.35rem}
+.cc-item{font-family:var(--px);font-size:.25rem;color:var(--g2);margin-top:.18rem;display:flex;align-items:flex-start;gap:.25rem}
+.skill-card{
+  background:linear-gradient(148deg,var(--s1),var(--bg4));
+  border:1px solid var(--s3);border-left:4px solid var(--s5);
+  padding:1rem 1.1rem;margin-bottom:.6rem;position:relative;
+}
+.skill-card.tier-op{border-left-color:var(--red)}
+.skill-card.tier-mid{border-left-color:var(--g3)}
+.skill-card.tier-mun{border-left-color:var(--s5)}
+.skill-card.tier-custom{border-left-color:var(--white);background:rgba(255,255,255,0.02)}
+.sc-tier{font-family:var(--px);font-size:.27rem;letter-spacing:.12em;margin-bottom:.18rem}
+.tier-op{color:var(--red); text-shadow: 0 0 15px var(--red-glow), 0 0 30px var(--red-glow);}
+.tier-mid{color:var(--g4)}.tier-mun{color:var(--g2)}.tier-custom{color:var(--white); text-shadow: 0 0 15px rgba(255,255,255,0.4);}
+.sc-name{font-family:var(--px);font-size:.48rem;color:var(--g5);margin-bottom:.2rem;letter-spacing:1px; text-shadow: 0 0 15px rgba(255,255,255,0.3);}
+.sc-desc{font-family:var(--vt);font-size:.95rem;color:var(--g3);line-height:1.7}
+.sc-note{font-family:var(--vt);font-size:.88rem;color:var(--g2);margin-top:.3rem;font-style:italic;padding:.3rem .6rem;border-left:2px solid var(--s5);background:rgba(255,255,255,0.02)}
+.pts-bar{display:inline-flex;align-items:center;gap:.7rem;padding:.5rem 1rem;background:rgba(255,255,255,0.02);border:1px solid var(--s5);margin-bottom:1rem}
+.pts-label{font-family:var(--px);font-size:.34rem;color:var(--g2);letter-spacing:.08em}
+.pts-num{font-family:var(--px);font-size:1.1rem;color:var(--white); text-shadow: 0 0 20px rgba(255,255,255,0.4);}
+.pts-total{font-family:var(--px);font-size:.34rem;color:var(--g2)}
+.stat-row{display:flex;align-items:center;gap:.9rem;margin-bottom:.8rem}
+.stat-name{font-family:var(--px);font-size:.38rem;letter-spacing:.08em;width:50px;flex-shrink:0;color:var(--g4); text-shadow: 0 0 10px rgba(255,255,255,0.2);}
+.stat-slider-wrap{flex:1;position:relative}
+.stat-slider{width:100%;-webkit-appearance:none;appearance:none;height:4px;background:var(--s4);outline:none;cursor:pointer;accent-color:var(--g4)}
+.stat-slider::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;background:var(--g5);border:2px solid var(--g3);cursor:pointer;transition:transform .1s; box-shadow: 0 0 12px rgba(255,255,255,0.4);}
+.stat-slider::-webkit-slider-thumb:hover{transform:scale(1.2)}
+.stat-val{font-family:var(--px);font-size:.7rem;width:26px;text-align:right;flex-shrink:0;color:var(--white); text-shadow: 0 0 15px rgba(255,255,255,0.5);}
+.stat-mod{font-family:var(--px);font-size:.32rem;width:34px;flex-shrink:0;text-align:center}
+.race-bonus{font-family:var(--px);font-size:.25rem;color:var(--g3);width:50px;flex-shrink:0}
+.trained-skills-grid{display:flex;flex-wrap:wrap;gap:.3rem}
+.ts-chip{font-family:var(--px);font-size:.28rem;padding:.22rem .5rem;border:1px solid var(--s4);color:var(--g2);cursor:pointer;transition:all .12s;letter-spacing:.04em}
+.ts-chip:hover{border-color:var(--g2);color:var(--g4)}
+.ts-chip.selected{border-color:var(--g4);color:var(--white);background:rgba(255,255,255,0.05); text-shadow: 0 0 12px rgba(255,255,255,0.4);}
+.ts-chip.locked{opacity:.3;cursor:not-allowed}
+.input-label{font-family:var(--px);font-size:.32rem;letter-spacing:.1em;color:var(--g2);margin-bottom:.2rem;display:block}
+input[type=text],textarea,select{background:var(--s1);border:1px solid var(--s4);color:var(--g5);font-family:var(--vt);font-size:1rem;padding:.5rem .7rem;outline:none;transition:border-color .12s;width:100%}
+input[type=text]:focus,textarea:focus,select:focus{border-color:var(--g3); box-shadow: 0 0 12px rgba(255,255,255,0.15);}
+select option{background:#050505}
+textarea{resize:vertical;min-height:200px;line-height:1.8}
+.btn{font-family:var(--px);font-size:.4rem;letter-spacing:.06em;padding:.52rem .95rem;background:rgba(255,255,255,0.015);border:1px solid var(--s4);color:var(--g3);cursor:pointer;transition:all .12s;display:inline-block}
+.btn:hover{border-color:var(--g3);color:var(--white); text-shadow: 0 0 15px rgba(255,255,255,0.4);}
+.btn:active{transform:scale(.97)}
+.btn-light{border-color:var(--g3);color:var(--white);background:rgba(255,255,255,0.04)}
+.btn-light:hover{background:rgba(255,255,255,0.09);box-shadow:0 0 20px rgba(255,255,255,0.15)}
+.btn-red{border-color:var(--red2);color:var(--red)}
+.btn-red:hover{background:rgba(196,28,28,0.1); text-shadow: 0 0 15px var(--red-glow), 0 0 25px var(--red-glow);}
+.btn-lg{font-size:.44rem;padding:.62rem 1.3rem}
+.btn-full{width:100%;text-align:center}
+.lore-box{background:rgba(0,0,0,.3);border-left:3px solid var(--s5);padding:.75rem 1rem;margin-bottom:1rem;font-family:var(--vt);font-size:1rem;color:var(--g3);line-height:1.85}
+.lore-box strong{color:var(--g5);font-family:var(--px);font-size:.33rem;letter-spacing:.08em}
+.inv-item{display:flex;align-items:flex-start;gap:.65rem;padding:.65rem .85rem;background:linear-gradient(148deg,var(--s1),var(--bg4));border:1px solid var(--s3);border-left:3px solid var(--s5);margin-bottom:.45rem}
+.inv-icon{font-size:1.05rem;flex-shrink:0;line-height:1.3}
+.inv-name{font-family:var(--px);font-size:.38rem;color:var(--g5);margin-bottom:.1rem; text-shadow: 0 0 12px rgba(255,255,255,0.3);}
+.inv-desc{font-family:var(--vt);font-size:.88rem;color:var(--g3);line-height:1.5}
+.inv-src{font-family:var(--px);font-size:.25rem;color:var(--g2);margin-top:.2rem;letter-spacing:.06em}
+.warn-box{font-family:var(--px);font-size:.34rem;color:var(--red);padding:.6rem;border:1px solid var(--red3);margin-bottom:.85rem;background:rgba(196,28,28,0.04);animation:warnBlink 1.5s ease-in-out infinite; text-shadow: 0 0 15px var(--red-glow);}
+@keyframes warnBlink{0%,100%{opacity:1}50%{opacity:.4}}
+.step-footer{display:flex;justify-content:space-between;align-items:center;margin-top:2rem;padding-top:1rem;border-top:1px solid var(--s4)}
+.step-hint{font-family:var(--vt);font-size:.9rem;color:var(--g2)}
+
+/* ── Alignment Grid ── */
+.align-card{
+  background:linear-gradient(148deg,var(--s1),var(--bg4));
+  border:1px solid var(--s4);padding:.65rem .5rem;
+  cursor:pointer;transition:all .15s;text-align:center;
+}
+.align-card:hover{border-color:var(--g1)}
+.align-card.selected{border:1px solid var(--g4);border-top:3px solid var(--white);background:rgba(255,255,255,0.035)}
+.align-law{font-family:var(--px);font-size:.22rem;color:var(--g2);letter-spacing:.1em;margin-bottom:.1rem}
+.align-eth{font-family:var(--px);font-size:.32rem;letter-spacing:.04em;margin:.1rem 0}
+.align-desc{font-family:var(--vt);font-size:.82rem;color:var(--g3);line-height:1.45;margin-top:.2rem}
+
+#intro-hero{
+  min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;padding:2rem;
+}
+.intro-title-wrap{
+  margin-bottom:0;
+  transition: all 1.2s cubic-bezier(0.25, 1, 0.5, 1);
+  transform-origin: center top;
+}
+.intro-title-wrap.moved-up{transform: translateY(-2vh) scale(0.75);}
+.intro-slash{color:var(--red); text-shadow: 0 0 25px var(--red-glow), 0 0 40px var(--red-glow);}
+.intro-lore-block{
+  max-width:640px;text-align:left;
+  padding:0 1.5rem;
+  border:none; background:transparent;
+  height: 0; opacity: 0;
+  margin-top: 0;
+  transition: opacity 1s ease 0.4s, padding 1s ease, margin 1s ease;
+  position:relative;
+}
+.intro-lore-block.visible{opacity:1;height:auto;min-height:400px;margin-top:2rem;margin-bottom:1.5rem;}
+/* ── scroll unfurl border ── */
+#scroll-wrap{
+  position:relative;
+  max-width:640px;
+  margin:0 auto;
+}
+#scroll-edge-top,#scroll-edge-bottom{
+  position:absolute;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,
+    transparent 0%,
+    rgba(180,160,100,0.3) 8%,
+    rgba(220,195,130,0.9) 30%,
+    rgba(240,215,155,1) 50%,
+    rgba(220,195,130,0.9) 70%,
+    rgba(180,160,100,0.3) 92%,
+    transparent 100%);
+  pointer-events:none;z-index:10;
+  transform:scaleX(0);transform-origin:center;
+  transition:transform 0.7s cubic-bezier(0.22,1,0.36,1);
+}
+#scroll-edge-top{top:0;}
+#scroll-edge-bottom{bottom:0;}
+#scroll-edge-left,#scroll-edge-right{
+  position:absolute;top:0;width:1px;
+  background:linear-gradient(180deg,
+    transparent 0%,
+    rgba(180,160,100,0.3) 5%,
+    rgba(210,185,120,0.75) 25%,
+    rgba(225,200,140,0.85) 50%,
+    rgba(210,185,120,0.75) 75%,
+    rgba(180,160,100,0.3) 95%,
+    transparent 100%);
+  pointer-events:none;z-index:10;
+  height:0;
+  transition:height 0.35s ease;
+}
+#scroll-edge-left{left:0;}
+#scroll-edge-right{right:0;}
+.scroll-orn{
+  position:absolute;width:10px;height:10px;
+  border-style:solid;border-color:rgba(215,190,125,0.8);
+  opacity:0;pointer-events:none;z-index:12;
+  transition:opacity 0.4s ease;
+}
+.scroll-orn.tl{top:-1px;left:-1px;border-width:2px 0 0 2px;}
+.scroll-orn.tr{top:-1px;right:-1px;border-width:2px 2px 0 0;}
+.scroll-orn.bl{bottom:-1px;left:-1px;border-width:0 0 2px 2px;}
+.scroll-orn.br{bottom:-1px;right:-1px;border-width:0 2px 2px 0;}
+#scroll-wrap.sealed #scroll-edge-bottom{transform:scaleX(1);}
+#scroll-wrap.sealed .scroll-orn{opacity:1;}
+.intro-line{
+  font-family:var(--vt);font-size:1.05rem;color:var(--g4);line-height:1.95;
+  opacity:0;transform:translateY(6px);
+  transition:opacity .5s ease,transform .5s ease;
+  margin-bottom:.15rem;
+}
+.intro-line.visible{opacity:1;transform:translateY(0)}
+.intro-line.blank{height:.6rem}
+.intro-line.heavy{color:var(--g5);font-size:1.1rem; text-shadow: 0 0 18px rgba(255,255,255,0.4);}
+@keyframes violentShake{
+  0%{transform:translate(0,0) rotate(0deg) scaleX(1)}
+  10%{transform:translate(-3px,1px) rotate(-1.5deg) scaleX(1.02)}
+  20%{transform:translate(4px,-2px) rotate(1deg) scaleX(0.98)}
+  30%{transform:translate(-2px,3px) rotate(-0.5deg) scaleX(1.03)}
+  40%{transform:translate(5px,-1px) rotate(2deg) scaleX(0.97)}
+  50%{transform:translate(-4px,2px) rotate(-1deg) scaleX(1)}
+  60%{transform:translate(3px,-3px) rotate(1.5deg) scaleX(1.02)}
+  70%{transform:translate(-5px,1px) rotate(-2deg) scaleX(0.98)}
+  80%{transform:translate(2px,2px) rotate(0.5deg) scaleX(1.01)}
+  90%{transform:translate(-3px,-2px) rotate(-1deg) scaleX(0.99)}
+  100%{transform:translate(1px,1px) rotate(0.5deg) scaleX(1)}
+}
+@keyframes glitchClip1{
+  0%,100%{clip-path:inset(0 0 95% 0)}
+  25%{clip-path:inset(20% 0 60% 0)}
+  50%{clip-path:inset(50% 0 30% 0)}
+  75%{clip-path:inset(70% 0 10% 0)}
+}
+@keyframes glitchClip2{
+  0%,100%{clip-path:inset(80% 0 5% 0)}
+  25%{clip-path:inset(40% 0 45% 0)}
+  50%{clip-path:inset(10% 0 75% 0)}
+  75%{clip-path:inset(60% 0 20% 0)}
+}
+@keyframes glitchShift{
+  0%,100%{transform:translateX(0)}
+  33%{transform:translateX(-4px)}
+  66%{transform:translateX(4px)}
+}
+@keyframes scanFlicker{
+  0%,94%,100%{opacity:1}
+  95%{opacity:0.4}
+  97%{opacity:0.8}
+  98%{opacity:0.2}
+  99%{opacity:0.9}
+}
+.intro-line.red-line{
+  font-family:var(--px);font-size:.55rem;color:var(--red);
+  text-shadow:0 0 25px var(--red-glow), 0 0 45px var(--red-glow), 2px 2px 0 #220000;
+  margin-top:.8rem;letter-spacing:.08em;
+  animation:redPulse 2.2s ease-in-out infinite, scanFlicker 3s step-end infinite;
+  position:relative;
+}
+.intro-line.red-line::before{
+  content:'';position:absolute;left:0;top:0;
+  color:var(--red);opacity:0;
+  text-shadow:-2px 0 cyan, 2px 0 magenta;
+  pointer-events:none;
+}
+.intro-line.red-line::after{
+  content:'';position:absolute;left:0;top:0;
+  color:var(--red);opacity:0;
+  text-shadow:2px 0 cyan, -2px 0 magenta;
+  pointer-events:none;
+}
+.intro-line.red-line.glitch-active::before{
+  content:attr(data-text);opacity:0.7;
+  animation:glitchClip1 0.4s steps(1) infinite, glitchShift 0.4s steps(1) infinite;
+}
+.intro-line.red-line.glitch-active::after{
+  content:attr(data-text);opacity:0.5;
+  animation:glitchClip2 0.4s steps(1) infinite;
+}
+.shaking-letter{display:inline-block;animation:violentShake 0.08s infinite;}
+@keyframes redPulse{0%,100%{text-shadow:0 0 15px var(--red-glow), 2px 2px 0 #220000}50%{text-shadow:0 0 35px var(--red-glow),0 0 60px rgba(196,28,28,0.4), 2px 2px 0 #220000}}
+.blinking-cursor{display:inline-block;width:9px;height:1em;background:var(--g5);animation:blink .9s step-end infinite;vertical-align:text-bottom;margin-left:2px; box-shadow: 0 0 12px rgba(255,255,255,0.6);}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+#intro-btn-wrap{opacity:0;transition:opacity .05s ease;margin-top:.5rem;pointer-events:none;}
+#intro-btn-wrap.visible{opacity:1;pointer-events:all;}
+@keyframes popupPunch{
+  0%  {transform:scale(0.5) translateY(40px);opacity:0;}
+  55% {transform:scale(1.06) translateY(-6px);opacity:1;}
+  72% {transform:scale(0.97) translateY(2px);}
+  84% {transform:scale(1.02) translateY(-2px);}
+  100%{transform:scale(1) translateY(0);opacity:1;}
+}
+@keyframes borderFlare{
+  0%,100%{box-shadow:0 0 8px rgba(255,255,255,0.15),inset 0 0 8px rgba(255,255,255,0.04);}
+  50%{box-shadow:0 0 30px rgba(255,255,255,0.4),0 0 60px rgba(255,255,255,0.15),inset 0 0 20px rgba(255,255,255,0.06);}
+}
+@keyframes btnPulse{
+  0%,100%{box-shadow:0 0 6px rgba(255,255,255,0.1);border-color:var(--g3);}
+  50%{box-shadow:0 0 22px rgba(255,255,255,0.35),0 0 40px rgba(255,255,255,0.1);border-color:var(--white);}
+}
+@keyframes headerFlicker{
+  0%,90%,100%{opacity:1;}91%{opacity:0;}93%{opacity:0.6;}95%{opacity:0;}97%{opacity:1;}
+}
+@keyframes scanRun{
+  0%{background-position:0 0;}100%{background-position:0 120px;}
+}
+#intro-skip{position:fixed;top:60px;right:1.5rem;z-index:600;font-family:var(--px);font-size:.3rem;color:var(--g2);background:rgba(0,0,0,.8);border:1px solid var(--s4);padding:.35rem .7rem;cursor:pointer;transition:color .15s;letter-spacing:.08em}
+#intro-skip:hover{color:var(--g5); text-shadow: 0 0 15px rgba(255,255,255,0.4);}
+
+/* ── Final Sheet ── */
+.final-sheet{
+  background:var(--bg2);border:2px solid var(--s5);padding:2rem;max-width:860px;margin:0 auto;
+}
+.final-sheet::before{
+  content:'[ LOW//LIFE — CHARACTER RECORD — FIELD ARCHIVE ]';
+  display:block;font-family:var(--px);font-size:.28rem;
+  color:var(--g2);letter-spacing:.12em;margin-bottom:1.2rem;
+  text-align:center;border-bottom:1px solid var(--s4);padding-bottom:.7rem;
+}
+.sheet-nameplate{border-bottom:2px solid var(--s5);padding-bottom:1.1rem;margin-bottom:1.3rem}
+.sheet-name{font-family:var(--px);font-size:.85rem;color:var(--white);text-shadow:0 0 25px rgba(255,255,255,0.4), 2px 2px 0 #000;margin-bottom:.28rem}
+.sheet-meta{font-family:var(--sk);font-size:.52rem;color:var(--g3)}
+.sheet-vitals{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.7rem}
+.vital-box{display:flex;flex-direction:column;align-items:center;padding:.45rem .7rem;min-width:60px;background:rgba(0,0,0,.4);border:1px solid var(--s5)}
+.vital-box.hp{border-color:var(--red3);background:rgba(100,10,10,0.15)}
+.vital-num{font-family:var(--px);font-size:1.1rem;line-height:1; text-shadow: 0 0 15px rgba(255,255,255,0.3);}
+.vital-lbl{font-family:var(--px);font-size:.22rem;color:var(--g2);margin-top:.18rem;letter-spacing:.06em;text-align:center}
+.sheet-sec{margin-bottom:1.4rem}
+.sheet-sec-title{font-family:var(--px);font-size:.36rem;color:var(--g5);margin-bottom:.65rem;display:flex;align-items:center;gap:.3rem;letter-spacing:.08em;text-shadow:0 0 15px rgba(255,255,255,0.3), 1px 1px 0 #000}
+.sheet-sec-title::before{content:'■';color:var(--g2)}
+.sheet-sec-title::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,rgba(255,255,255,0.07),transparent)}
+.stats-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:.4rem}
+@media(max-width:500px){.stats-grid{grid-template-columns:repeat(3,1fr)}}
+.stat-box{background:var(--bg3);border:1px solid var(--s4);padding:.55rem .4rem;text-align:center}
+.sb-name{font-family:var(--px);font-size:.26rem;margin-bottom:.18rem;color:var(--g3)}
+.sb-val{font-family:var(--px);font-size:1rem;line-height:1;color:var(--white); text-shadow: 0 0 15px rgba(255,255,255,0.4);}
+.sb-mod{font-family:var(--px);font-size:.3rem;margin-top:.12rem}
+.skills-grid{display:grid;grid-template-columns:1fr 1fr;gap:.45rem}
+@media(max-width:500px){.skills-grid{grid-template-columns:1fr}}
+.skill-row-sheet{border:1px solid var(--s4);border-left:3px solid var(--s5);padding:.52rem .7rem;background:rgba(0,0,0,.28);position:relative;cursor:default;}
+.skill-row-sheet[data-tip]:not([data-custom]){cursor:help;}
+/* PC tooltip */
+.skill-tip-box{
+  position:fixed;z-index:3000;
+  width:280px;
+  background:var(--bg2);
+  border:1px solid var(--s5);
+  border-left:3px solid var(--g3);
+  padding:.75rem .9rem;
+  pointer-events:none;
+  opacity:0;
+  transition:opacity .15s ease;
+  box-shadow:0 8px 32px rgba(0,0,0,0.9);
+}
+.skill-tip-box.visible{opacity:1;}
+.stb-label{font-family:var(--px);font-size:.24rem;color:var(--g2);letter-spacing:.12em;margin-bottom:.3rem;}
+.stb-name{font-family:var(--px);font-size:.38rem;color:var(--white);margin-bottom:.35rem;text-shadow:0 0 10px rgba(255,255,255,0.3);}
+.stb-body{font-family:var(--vt);font-size:.92rem;color:var(--g4);line-height:1.75;}
+.stb-range{font-family:var(--px);font-size:.26rem;color:var(--g3);margin-top:.4rem;padding:.25rem .4rem;border:1px solid var(--s5);display:inline-block;letter-spacing:.06em;}
+.stb-mod-line{font-family:var(--px);font-size:.24rem;color:var(--g2);margin-top:.3rem;letter-spacing:.04em;line-height:1.8;}
+.stb-hint{font-family:var(--vt);font-size:.82rem;color:var(--g2);margin-top:.35rem;font-style:italic;border-top:1px solid var(--s4);padding-top:.3rem;}
+/* Mobile modal */
+#skill-modal-overlay{
+  display:none;position:fixed;inset:0;z-index:4000;
+  background:rgba(0,0,0,0);
+  backdrop-filter:blur(0px);
+  transition:background .3s ease, backdrop-filter .3s ease;
+}
+#skill-modal-overlay.show{
+  display:flex;align-items:center;justify-content:center;
+  background:rgba(0,0,0,0.82);
+  backdrop-filter:blur(6px);
+}
+#skill-modal-box{
+  background:var(--bg2);border:1px solid var(--s5);border-top:3px solid var(--g3);
+  width:90vw;max-width:440px;padding:1.4rem 1.5rem 1.2rem;
+  position:relative;
+  animation:pageFadeIn .25s ease;
+}
+#skill-modal-close{
+  position:absolute;top:.6rem;right:.7rem;
+  font-family:var(--px);font-size:.28rem;color:var(--g2);
+  background:none;border:1px solid var(--s4);padding:.22rem .45rem;
+  cursor:pointer;letter-spacing:.06em;
+}
+#skill-modal-close:hover{color:var(--white);border-color:var(--g3);}
+/* hold progress ring on mobile */
+.hold-ring{
+  position:absolute;top:4px;right:4px;width:18px;height:18px;
+  pointer-events:none;opacity:0;transition:opacity .1s;
+}
+.hold-ring.active{opacity:1;}
+.hold-ring circle{
+  fill:none;stroke:var(--g3);stroke-width:2;
+  stroke-dasharray:50;stroke-dashoffset:50;
+  transform:rotate(-90deg);transform-origin:50% 50%;
+  transition:stroke-dashoffset 5s linear;
+}
+.hold-ring.active circle{stroke-dashoffset:0;}
+.srs-tier{font-family:var(--px);font-size:.24rem;margin-bottom:.08rem}
+.srs-name{font-family:var(--px);font-size:.36rem;color:var(--g5);margin-bottom:.12rem; text-shadow: 0 0 10px rgba(255,255,255,0.25);}
+.srs-desc{font-family:var(--vt);font-size:.85rem;color:var(--g3);line-height:1.5}
+.trained-chips{display:flex;flex-wrap:wrap;gap:.3rem}
+.trained-chip{font-family:var(--px);font-size:.28rem;padding:.2rem .5rem;border:1px solid var(--s5);color:var(--g4);background:rgba(255,255,255,0.03)}
+.inv-grid{display:grid;grid-template-columns:1fr 1fr;gap:.45rem}
+@media(max-width:500px){.inv-grid{grid-template-columns:1fr}}
+.inv-pill{background:rgba(0,0,0,.3);border:1px solid var(--s4);padding:.48rem .65rem}
+.ip-head{display:flex;align-items:center;gap:.38rem;margin-bottom:.1rem}
+.ip-icon{font-size:.9rem}
+.ip-name{font-family:var(--px);font-size:.35rem;color:var(--g5); text-shadow: 0 0 10px rgba(255,255,255,0.2);}
+.ip-desc{font-family:var(--vt);font-size:.84rem;color:var(--g3);line-height:1.5}
+.ip-src{font-family:var(--px);font-size:.24rem;color:var(--g2);margin-top:.15rem}
+.lore-final{background:rgba(0,0,0,.35);border-left:3px solid var(--s5);padding:.75rem 1rem}
+.lore-final-text{font-family:var(--vt);font-size:.94rem;color:var(--g3);line-height:1.85;white-space:pre-wrap}
+.sheet-footer-bar{border-top:1px solid var(--s4);padding-top:.9rem;margin-top:1.3rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.6rem}
+.sheet-footer-lore{font-family:var(--px);font-size:.26rem;color:var(--g2);line-height:1.85}
+.complete-banner{
+  text-align:center;padding:1.1rem;
+  background:linear-gradient(130deg,rgba(255,255,255,0.02),rgba(196,28,28,0.02));
+  border:1px solid rgba(255,255,255,0.12);border-left:4px solid var(--g4);
+  margin-bottom:1.4rem;animation:surgeAura 2.5s ease-in-out infinite;
+}
+@keyframes surgeAura{0%,100%{box-shadow:0 0 10px rgba(255,255,255,0.05)}50%{box-shadow:0 0 30px rgba(255,255,255,0.12)}}
+.cb-title{font-family:var(--px);font-size:.48rem;color:var(--white);letter-spacing:.18em;margin-bottom:.28rem;text-shadow:0 0 25px rgba(255,255,255,0.5), 0 0 40px rgba(255,255,255,0.3)}
+.cb-sub{font-family:var(--vt);font-size:.95rem;color:var(--g3)}
+#theme-controls{
+  position:fixed;bottom:1.4rem;right:1.4rem;z-index:800;
+  display:flex;gap:.4rem;flex-direction:column;align-items:flex-end;
+}
+.float-btn{
+  background:rgba(5,5,5,.92);border:1px solid var(--s5);
+  color:var(--g2);font-family:var(--px);font-size:.24rem;
+  padding:.38rem .65rem;cursor:pointer;letter-spacing:.08em;transition:all .15s;
+}
+.float-btn:hover{border-color:var(--g3);color:var(--g5);text-shadow:0 0 15px rgba(255,255,255,0.4);}
+.float-btn.active{border-color:var(--theme-accent);color:var(--white);text-shadow:0 0 15px var(--theme-accent-glow);}
+#music-btn{
+  background:rgba(5,5,5,.92);border:1px solid var(--s5);
+  color:var(--g2);font-family:var(--px);font-size:.24rem;
+  padding:.38rem .65rem;cursor:pointer;letter-spacing:.08em;transition:all .15s;
+}
+#music-btn:hover{border-color:var(--g3);color:var(--g5);text-shadow:0 0 15px rgba(255,255,255,0.4);}
+.divider{height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.07),transparent);margin:1rem 0}
+.tip-box{background:rgba(0,0,0,.3);border:1px solid var(--s4);border-left:3px solid var(--g2);padding:.65rem .9rem;margin-bottom:1rem;font-family:var(--vt);font-size:.95rem;color:var(--g3);line-height:1.75}
+.tip-box strong{font-family:var(--px);font-size:.3rem;color:var(--g5);letter-spacing:.06em; text-shadow: 0 0 12px rgba(255,255,255,0.3);}
+
+/* ── Save/Resume toast ── */
+#resume-toast{
+  display:none;position:fixed;bottom:4.5rem;right:1.4rem;z-index:800;
+  background:rgba(5,5,5,.96);border:1px solid var(--s5);border-left:3px solid var(--g3);
+  padding:.55rem .9rem;max-width:260px;
+}
+#resume-toast.show{display:block;animation:pageFadeIn .3s ease}
+#resume-toast p{font-family:var(--px);font-size:.26rem;color:var(--g3);margin-bottom:.4rem;line-height:1.6;letter-spacing:.04em}
+#resume-toast .btn{font-size:.26rem;padding:.3rem .6rem;margin-right:.3rem}
+
+.final-sheet.has-colors{
+  border:2px solid transparent;
+  background-clip:padding-box;
+  position:relative;
+}
+.final-sheet.has-colors::before{
+  content:'';position:absolute;inset:-2px;z-index:-1;
+  background:linear-gradient(135deg,rgba(var(--race-color-rgb),0.85) 0%,rgba(var(--class-color-rgb),0.85) 100%);
+}
+.final-sheet.has-colors::after{
+  content:'';position:absolute;inset:-12px;z-index:-2;
+  background:linear-gradient(135deg,rgba(var(--race-color-rgb),0.15) 0%,rgba(var(--class-color-rgb),0.15) 100%);
+  filter:blur(8px);
+}
+
+@media print{
+  body{background:white!important;color:black!important;cursor:default}
+  body::before,body::after,#bgCanvas,#mist-wrap,#trailCanvas,#topnav,#print-btn,.step-footer,.warn-box,#music-btn,#intro-skip,#resume-toast{display:none!important}
+  .final-sheet{border:2px solid #333!important;background:white!important}
+  *{color:inherit!important;background:transparent!important;text-shadow:none!important;box-shadow:none!important;border-color:#ccc!important}
+  .sheet-name,.sheet-sec-title,.srs-name,.ip-name,.cc-name{color:#000!important}
+}
+
+/* Class modal */
+#class-modal-backdrop{
+  position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,0);
+  display:flex;align-items:center;justify-content:center;
+  pointer-events:none;transition:background .25s ease;
+}
+#class-modal-backdrop.show{background:rgba(0,0,0,0.85);pointer-events:all;}
+#class-modal{
+  background:var(--bg2);border:1px solid var(--s5);border-top:3px solid var(--g3);
+  width:620px;max-width:95vw;max-height:88vh;overflow-y:auto;
+  opacity:0;transform:translateY(18px) scale(0.97);
+  transition:opacity .22s ease,transform .22s ease;position:relative;
+  box-shadow: 0 10px 50px rgba(0,0,0,0.9);
+}
+#class-modal-backdrop.show #class-modal{opacity:1;transform:translateY(0) scale(1)}
+.cm-header{padding:1.4rem 1.5rem 0;display:flex;align-items:flex-start;justify-content:space-between;gap:1rem}
+.cm-icon-name{display:flex;align-items:center;gap:.75rem}
+.cm-icon{font-size:1.8rem;line-height:1}
+.cm-close{font-family:var(--px);font-size:.3rem;color:var(--g2);background:none;border:1px solid var(--s4);padding:.28rem .55rem;cursor:pointer;letter-spacing:.06em;transition:all .12s;flex-shrink:0}
+.cm-close:hover{border-color:var(--g3);color:var(--white); text-shadow: 0 0 12px rgba(255,255,255,0.4);}
+.cm-body{padding:1rem 1.5rem 1.5rem}
+.cm-section-lbl{font-family:var(--px);font-size:.28rem;color:var(--g2);letter-spacing:.14em;margin-bottom:.5rem;margin-top:1rem}
+.cm-lore-block{background:rgba(0,0,0,.4);border-left:3px solid var(--red2);padding:.7rem 1rem;font-family:var(--vt);font-size:1rem;color:var(--g4);line-height:1.85;font-style:italic;margin-bottom:.2rem;}
+.cm-scenario-block{background:rgba(255,255,255,0.02);border:1px solid var(--s4);border-left:3px solid var(--g2);padding:.7rem 1rem;font-family:var(--vt);font-size:.98rem;color:var(--g3);line-height:1.8;}
+.cm-footer{padding:.9rem 1.5rem;border-top:1px solid var(--s4);display:flex;gap:.6rem;align-items:center;background:rgba(0,0,0,.3);position:sticky;bottom:0;}
+</style>
+</head>
+<body>
+<canvas id="bgCanvas"></canvas>
+<div id="mist-wrap"><div class="mist-layer"></div><div class="mist-layer"></div><div class="mist-layer"></div></div>
+<canvas id="trailCanvas"></canvas>
+<button id="intro-skip" onclick="skipIntro()" style="display:none">SKIP ▶</button>
+<nav id="topnav">
+  <div class="nav-brand">LOW<span>//</span>LIFE</div>
+  <div class="nav-steps" id="nav-steps"></div>
+  <button id="replay-intro-btn" onclick="replayIntro()" style="display:none;font-family:var(--px);font-size:.24rem;color:var(--g2);background:rgba(0,0,0,.8);border:1px solid var(--s4);padding:.3rem .6rem;cursor:pointer;letter-spacing:.08em;transition:color .15s;" onmouseover="this.style.color='var(--g5)'" onmouseout="this.style.color='var(--g2)'">↺ INTRO</button>
+</nav>
+<div id="theme-controls">
+  <div style="display:flex;gap:.3rem;">
+    <div class="float-btn" id="btn-default" onclick="setTheme('')">[ DEFAULT ]</div>
+    <div class="float-btn" id="btn-blood" onclick="setTheme('blood-moon')">[ BLOOD MOON ]</div>
+    <div class="float-btn" id="btn-eclipse" onclick="setTheme('eclipse')">[ ECLIPSE ]</div>
+    <div class="float-btn" id="btn-azure" onclick="setTheme('azure-moon')">[ AZURE MOON ]</div>
+    <div id="music-btn" onclick="toggleMusic()">♪ MUSIC ON</div>
+  </div>
+</div>
+
+<div id="resume-toast">
+  <p id="resume-toast-msg">UNSAVED SESSION FOUND</p>
+  <button class="btn btn-light" onclick="resumeSession()">↺ RESUME</button>
+  <button class="btn" onclick="dismissResume()">✕</button>
+</div>
+
+<div id="site-wrap">
+
+<div class="page active" data-page="0" id="page-intro">
+  <div id="intro-hero">
+    <div class="intro-title-wrap" id="start-click-overlay" onclick="runIntro()" style="cursor:pointer">
+      <div id="click-to-begin" style="font-family:var(--px);font-size:.36rem;color:var(--g2);letter-spacing:.22em;margin-bottom:.5rem;animation:blink 1.5s infinite;transition:opacity 0.5s;">// CLICK TO BEGIN</div>
+      <div style="font-family:var(--px);font-size:1.5rem;color:var(--white);text-shadow:0 0 30px rgba(255,255,255,0.4), 0 0 50px rgba(255,255,255,0.2), 3px 3px 0 #000;letter-spacing:4px">LOW<span class="intro-slash">//</span>LIFE</div>
+      <div style="font-family:var(--vt);font-size:1.2rem;color:var(--g3);letter-spacing:2px;margin-top:.5rem;font-style:italic">"death is mercy to those forsaken by honor"</div>
+    </div>
+    <div id="scroll-wrap">
+      <div id="scroll-edge-top"></div>
+      <div id="scroll-edge-bottom"></div>
+      <div id="scroll-edge-left"></div>
+      <div id="scroll-edge-right"></div>
+      <div class="scroll-orn tl"></div>
+      <div class="scroll-orn tr"></div>
+      <div class="scroll-orn bl"></div>
+      <div class="scroll-orn br"></div>
+      <div class="intro-lore-block" id="intro-lore-block"></div>
+    </div>
+    <div id="intro-btn-wrap">
+      <div id="creation-popup" style="
+        text-align:center;
+        transform:scale(0.6) translateY(30px);
+        opacity:0;
+        transition: transform 0s, opacity 0s;
+      ">
+        <div id="popup-scanline" style="
+          position:relative;overflow:hidden;
+          border:2px solid var(--white);
+          box-shadow:0 0 0px var(--white);
+          padding:1.8rem 2.2rem 1.4rem;
+          background:var(--bg);
+          display:inline-block;
+        ">
+          <div id="popup-glitch-bar" style="
+            position:absolute;top:0;left:0;right:0;height:100%;
+            background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(255,255,255,0.015) 3px,rgba(255,255,255,0.015) 4px);
+            pointer-events:none;z-index:2;
+          "></div>
+          <div style="position:relative;z-index:3;">
+            <div id="popup-header" style="
+              font-family:var(--px);font-size:.28rem;color:var(--g2);
+              letter-spacing:.22em;margin-bottom:.9rem;
+              border-bottom:1px solid var(--s5);padding-bottom:.6rem;
+            ">// ARCHIVE UNSEALED — RECORD PENDING</div>
+            <button id="begin-btn" class="btn btn-light btn-lg" onclick="beginCreation()" style="
+              font-size:.5rem;
+              padding:.8rem 1.8rem;
+              letter-spacing:.12em;
+              border-width:2px;
+              position:relative;
+              overflow:hidden;
+            ">▶ BEGIN CHARACTER CREATION</button>
+            <div id="popup-sub" style="
+              font-family:var(--px);font-size:.25rem;color:var(--g2);
+              margin-top:.75rem;letter-spacing:.1em;line-height:1.9;
+            ">7 STEPS · SHARE YOUR SHEET WITH YOUR DM</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="page" data-page="1" id="page-1">
+  <div class="page-inner">
+    <div class="ph-tag">// STEP 1 OF 6 — IDENTITY</div>
+    <div class="ph-title">WHO <span style="color:var(--g3); text-shadow:none;">ARE YOU?</span></div>
+    <div class="ph-lore">"The slums remember faces, not names. The archive insists on both."</div>
+    <div class="ph-line"></div>
+    <div class="sys-panel">
+      <div class="panel-title">Character Name</div>
+      <label class="input-label">WHAT DO THEY CALL YOU IN LYTHERN?</label>
+      <div style="display:flex;gap:.5rem;align-items:stretch">
+        <input type="text" id="inp-name" placeholder="Enter your name…" maxlength="40" style="flex:1">
+        <button class="btn" id="rng-name-btn" onclick="randomName()" style="flex-shrink:0;white-space:nowrap;font-size:.3rem">↺ RANDOM NAME</button>
+      </div>
+      <div style="font-family:var(--vt);font-size:.9rem;color:var(--g2);margin-top:.5rem">A street alias, a real name, or something you earned the hard way. The GM will use this. Make it mean something.</div>
+    </div>
+
+    <div class="sys-panel">
+      <div class="panel-title">Physical Description</div>
+      <div class="grid2" style="gap:.6rem;margin-bottom:.7rem">
+        <div>
+          <label class="input-label">AGE</label>
+          <input type="text" id="inp-age" placeholder="e.g. 24, or mid-thirties…" maxlength="30">
+        </div>
+        <div>
+          <label class="input-label">DISTINGUISHING MARK</label>
+          <input type="text" id="inp-mark" placeholder="e.g. missing left ear, burn scar…" maxlength="60">
+        </div>
+      </div>
+      <label class="input-label">APPEARANCE — HOW WOULD YOU BE DESCRIBED TO A BOUNTY HUNTER?</label>
+      <input type="text" id="inp-appearance" placeholder="Tall, hooded, moves like someone used to being followed…" maxlength="120">
+      <div style="font-family:var(--vt);font-size:.9rem;color:var(--g2);margin-top:.5rem">Optional. Your GM reads from this when you enter a room.</div>
+    </div>
+
+    <div class="tip-box"><strong>■ FIRST TIME?</strong> The name doesn't have to sound like it belongs in a legend. Most people in Lythern have ordinary names. The city is what made them worth remembering — or worth fearing.</div>
+    <div class="step-footer">
+      <div class="step-hint">A name is required.</div>
+      <button class="btn btn-light btn-lg" onclick="step1Next()">NEXT: RACE ▶</button>
+    </div>
+  </div>
+</div>
+
+<div class="page" data-page="2" id="page-2">
+  <div class="page-inner">
+    <div class="ph-tag">// STEP 2 OF 6 — BLOODLINE</div>
+    <div class="ph-title">CHOOSE YOUR <span style="color:var(--g3); text-shadow:none;">RACE</span></div>
+    <div class="ph-lore">"Your blood shapes how the slums see you. Not who you are — just where you start."</div>
+    <div class="ph-line"></div>
+    <div class="tip-box"><strong>■ FIRST TIME?</strong> Your race is where you start — not who you are. It gives you small advantages and shapes how Lythern reads you at a glance. Pick what fits the person you're building. The rest comes from the choices you make after.</div>
+    <div id="race-grid" class="grid3"></div>
+    
+    <div id="custom-race-panel" style="display:none; margin-top:1.5rem">
+       <div class="sys-panel" style="border-left-color:var(--white); background:rgba(255,255,255,0.02)">
+         <div class="panel-title">Forge Custom Lineage</div>
+         <div class="grid2" style="gap:1rem; margin-bottom:1rem;">
+           <div>
+             <label class="input-label">CUSTOM RACE NAME</label>
+             <input type="text" id="inp-cr-name" placeholder="Name your lineage..." onchange="updateCustomRace()">
+           </div>
+           <div>
+             <label class="input-label">STAT BONUS (+2)</label>
+             <select id="inp-cr-stat" onchange="updateCustomRace()">
+                <option value="str">Strength (STR)</option>
+                <option value="dex">Dexterity (DEX)</option>
+                <option value="con">Constitution (CON)</option>
+                <option value="int">Intelligence (INT)</option>
+                <option value="wis">Wisdom (WIS)</option>
+                <option value="cha">Charisma (CHA)</option>
+             </select>
+           </div>
+         </div>
+         <div>
+            <label class="input-label">RACIAL TRAIT DESCRIPTION</label>
+            <input type="text" id="inp-cr-desc" placeholder="e.g. Can breathe underwater, has darkvision, advantage on saving throws vs poison..." onchange="updateCustomRace()">
+         </div>
+       </div>
+    </div>
+
+    <div id="race-inv-preview" style="margin-top:1rem"></div>
+    <div class="step-footer">
+      <button class="btn" onclick="goTo(1)">◀ BACK</button>
+      <div class="step-hint" id="race-hint">Select a race.</div>
+      <button class="btn btn-light btn-lg" onclick="step2Next()">NEXT: CLASS ▶</button>
+    </div>
+  </div>
+</div>
+
+<div class="page" data-page="3" id="page-3">
+  <div class="page-inner">
+    <div class="ph-tag">// STEP 3 OF 6 — CALLING</div>
+    <div class="ph-title">CHOOSE YOUR <span style="color:var(--g3); text-shadow:none;">CLASS</span></div>
+    <div class="ph-lore">"In Lythern there are only two kinds of people: those with a specialty, and those digging graves for those who did."</div>
+    <div class="ph-line"></div>
+    <div class="tip-box"><strong>■ FIRST TIME?</strong> Your class is what you're good at when everything goes wrong. <span style="color:var(--g5)">BEGINNER</span> classes do one thing well and are hard to get wrong. <span style="color:#a09040">INTERMEDIATE</span> give you more options — and more ways to fumble them. <span style="color:#a04040">ADVANCED</span> reward players who know the system. Click any card — it will tell you exactly what you'd be doing at the table.</div>
+    <div id="class-section-martial" style="margin-bottom:1.2rem">
+      <div style="font-family:var(--px);font-size:.34rem;color:var(--g2);letter-spacing:.14em;margin-bottom:.6rem;padding-bottom:.4rem;border-bottom:1px solid var(--s4)">▸ MARTIAL — COMBAT-FOCUSED</div>
+      <div id="class-grid-martial" class="grid3"></div>
+    </div>
+    <div id="class-section-spell">
+      <div style="font-family:var(--px);font-size:.34rem;color:var(--g2);letter-spacing:.14em;margin-bottom:.6rem;padding-bottom:.4rem;border-bottom:1px solid var(--s4)">▸ SPELLCASTERS — MAGIC USERS</div>
+      <div id="class-grid-spell" class="grid3"></div>
+    </div>
+    <div id="class-inv-preview" style="margin-top:1rem"></div>
+    <div class="step-footer">
+      <button class="btn" onclick="goTo(2)">◀ BACK</button>
+      <div class="step-hint" id="class-hint">Select a class.</div>
+      <button class="btn btn-light btn-lg" onclick="step3Next()">NEXT: SKILLS ▶</button>
+    </div>
+  </div>
+</div>
+
+<div class="page" data-page="4" id="page-4">
+  <div class="page-inner">
+    <div class="ph-tag">// STEP 4 OF 6 — ABILITIES</div>
+    <div class="ph-title">YOUR <span style="color:var(--g3); text-shadow:none;">SKILLS</span></div>
+    <div class="ph-lore">"The System assigns your abilities. You may sacrifice one standard skill for a second custom ability."</div>
+    <div class="ph-line"></div>
+    <div class="tip-box"><strong>■ FIRST TIME?</strong> <span style="color:var(--red)">OVERPOWERED</span> skills are the ones you'll reach for every session — your signature moves. <span style="color:var(--g4)">SITUATIONAL</span> ones sit quietly until the perfect moment, then change everything. <span style="color:var(--g2)">MUNDANE</span> work in the background without you thinking about them. The <span style="color:var(--white)">CUSTOM</span> slot is yours to invent — your GM will build around it. You can also sacrifice one standard skill for a second custom one. Think carefully. That trade is permanent.</div>
+    <div id="skills-list"></div>
+    <div class="step-footer">
+      <button class="btn" onclick="goTo(3)">◀ BACK</button>
+      <button class="btn btn-light btn-lg" onclick="step4Next()">NEXT: ABILITY SCORES ▶</button>
+    </div>
+  </div>
+</div>
+
+<div class="page" data-page="5" id="page-5">
+  <div class="page-inner">
+    <div class="ph-tag">// STEP 5 OF 6 — STAT ALLOCATION</div>
+    <div class="ph-title">ABILITY <span style="color:var(--g3); text-shadow:none;">SCORES</span></div>
+    <div class="ph-lore">"The slums either made you strong or made you clever. Usually not both."</div>
+    <div class="ph-line"></div>
+    <div class="sys-panel">
+      <div class="panel-title">Point Buy — 27 Points</div>
+      <div class="lore-box">Each stat starts at 8. Spend 27 points to raise them. <span style="color:var(--g5)">8–13 costs 1 point each. 14 costs 2 extra. 15 costs 2 extra.</span> Maximum is 15 before racial bonuses. Modifier = (score − 10) ÷ 2, rounded down. This is what actually affects rolls.</div>
+      <div class="tip-box" style="margin-bottom:.8rem"><strong>■ FIRST TIME?</strong> Don't try to be good at everything. Pick 2 stats your class lives on and push them high. The rest can stay low — Lythern will punish your weaknesses regardless, so you'd rather have real strengths than mediocre everything. Your class tip below tells you exactly what to prioritise. Use it. Or don't, and learn the hard way.</div>
+      <div id="class-stat-tip" style="display:none;font-family:var(--px);font-size:.28rem;color:var(--g3);padding:.45rem .7rem;border:1px solid var(--s4);border-left:3px solid var(--g2);background:rgba(255,255,255,0.02);margin-bottom:.75rem;letter-spacing:.04em"></div>
+      <div id="preset-wrap" style="display:none;margin-bottom:1rem;">
+        <div style="font-family:var(--px);font-size:.3rem;color:var(--g2);letter-spacing:.14em;margin-bottom:.5rem;">▸ FIRST TIME? PICK A BUILD — OR IGNORE THIS AND DO IT YOURSELF</div>
+        <div id="preset-btns" style="display:flex;gap:.4rem;flex-wrap:wrap;"></div>
+        <div id="preset-desc" style="font-family:var(--vt);font-size:.9rem;color:var(--g3);margin-top:.4rem;padding:.3rem .6rem;border-left:2px solid var(--s5);display:none;"></div>
+      </div>
+      <div class="pts-bar">
+        <div class="pts-label">POINTS LEFT:</div>
+        <div class="pts-num" id="pts-left">27</div>
+        <div class="pts-total">/ 27</div>
+      </div>
+      <div id="stat-rows"></div>
+    </div>
+    <div class="sys-panel">
+      <div class="panel-title">Trained Skills — Pick 3</div>
+      <div class="lore-box">Trained skills add your proficiency bonus (+2 at Level 1) to relevant checks. Pick what fits your character's history and class.</div>
+      <div style="font-family:var(--px);font-size:.31rem;color:var(--g3);margin-bottom:.55rem" id="ts-count">0 / 3 selected</div>
+      <div class="trained-skills-grid" id="trained-skills-grid"></div>
+    </div>
+    <div class="step-footer">
+      <button class="btn" onclick="goTo(4)">◀ BACK</button>
+      <button class="btn btn-light btn-lg" onclick="step5Next()">NEXT: YOUR STORY ▶</button>
+    </div>
+  </div>
+</div>
+
+<div class="page" data-page="6" id="page-6">
+  <div class="page-inner">
+    <div class="ph-tag">// STEP 6 OF 6 — ORIGINS</div>
+    <div class="ph-title">YOUR <span style="color:var(--g3); text-shadow:none;">STORY</span></div>
+    <div class="ph-lore">"Every soul in Lythern arrived with a reason. The archive records them all."</div>
+    <div class="ph-line"></div>
+
+    <div class="sys-panel">
+      <div class="panel-title">Moral Alignment</div>
+      <div class="lore-box">In Lythern, alignment is not a virtue — it is a pattern. How your character consistently chooses when the stakes are real. Your GM will reference this in moral dilemmas.</div>
+      <div id="alignment-grid" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.4rem"></div>
+    </div>
+
+    <div class="sys-panel">
+      <div class="panel-title">Fate & Karma</div>
+      <div class="grid2" style="gap:.7rem">
+         <div>
+            <label class="input-label">LUCK SCORE (1-10)</label>
+            <div style="display:flex; align-items:center; gap: 1rem;">
+               <div id="luck-display" style="font-family:var(--px); font-size:1.2rem; color:var(--white); text-shadow:0 0 10px rgba(255,255,255,0.4)">?</div>
+               <button class="btn btn-light" id="roll-luck-btn" onclick="rollLuck()">🎲 ROLL LUCK</button>
+            </div>
+            <div style="font-family:var(--vt);font-size:.88rem;color:var(--g2);margin-top:.3rem">Luck defines how the city treats your blind spots. You can only roll once. Can be spent during sessions.</div>
+         </div>
+         <div>
+            <label class="input-label">KARMA RATING</label>
+            <div id="karma-display" style="font-family:var(--px); font-size:1.2rem; color:var(--g4); text-shadow:0 0 10px rgba(255,255,255,0.1)">NEUTRAL</div>
+            <div style="font-family:var(--vt);font-size:.88rem;color:var(--g2);margin-top:.3rem">Derived from your moral alignment. Dictates the consequences of your past catching up with you.</div>
+         </div>
+      </div>
+    </div>
+
+    <div class="sys-panel">
+      <div class="panel-title">Personality Traits — Pick up to 2</div>
+      <div class="lore-box">How your character moves through the world. The GM uses these in downtime scenes, NPC reactions, and moments of unscripted roleplay.</div>
+      <div style="font-family:var(--px);font-size:.31rem;color:var(--g3);margin-bottom:.5rem" id="trait-count">0 / 2 selected</div>
+      <div id="trait-chips" style="display:flex;flex-wrap:wrap;gap:.3rem"></div>
+    </div>
+
+    <div class="sys-panel">
+      <div class="panel-title">Flaw & Bond</div>
+      <div class="grid2" style="gap:.7rem">
+        <div>
+          <label class="input-label">YOUR FLAW — ONE SENTENCE</label>
+          <input type="text" id="inp-flaw" placeholder="e.g. I can't walk away from someone begging for help…" maxlength="120">
+          <div style="font-family:var(--vt);font-size:.88rem;color:var(--g2);margin-top:.3rem">The weakness your enemies will eventually find.</div>
+        </div>
+        <div>
+          <label class="input-label">YOUR BOND — ONE SENTENCE</label>
+          <input type="text" id="inp-bond" placeholder="e.g. I owe a debt to the woman who pulled me off the streets…" maxlength="120">
+          <div style="font-family:var(--vt);font-size:.88rem;color:var(--g2);margin-top:.3rem">The one thing that keeps you anchored in Lythern.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sys-panel">
+      <div class="panel-title">Backstory — How Did You End Up In The Slums?</div>
+      <div class="lore-box"><strong>■ THE ARCHIVE ASKS</strong><br><br>Write freely. This is your character's truth — who they were before, what they lost, what they owe, why they're still here.<br><br><span style="color:var(--g2)">Your GM uses this. Your party will discover it in fragments. Don't hold back.</span></div>
+      <textarea id="lore-inp" placeholder="God turned his back on you for a reason. What was it?
+
+Suggested prompts (optional):
+• What did you do — or fail to do — that closed every other door but this one?
+• What did Vesuvius Aelintaine's machine take from you, and did it know your name when it did?
+• There is one thing you carried into Lythern that you have not yet sold or lost. What is it, and why is it still yours?
+• Who in Lythern already knows what you owe — and what are they waiting for?
+• What were you before this city got hold of you? Say it plainly. Then explain what broke that person.
+• Name the one thing that would make you leave Lythern forever. Then explain honestly why you haven't done it yet.
+• What sin from a life before this one do you suspect God has not forgiven? What makes you think he ever will?"></textarea>
+    </div>
+    <div class="step-footer">
+      <button class="btn" onclick="goTo(5)">◀ BACK</button>
+      <button class="btn btn-light btn-lg" onclick="step6Next()">⚔ FORGE MY CHARACTER ▶</button>
+    </div>
+  </div>
+</div>
+
+<!-- PC tooltip -->
+<div class="skill-tip-box" id="skill-tip-box">
+  <div class="stb-label">▸ HOW THIS WORKS</div>
+  <div class="stb-name" id="stb-name"></div>
+  <div class="stb-body" id="stb-body"></div>
+  <div class="stb-range" id="stb-range"></div>
+  <div class="stb-mod-line" id="stb-mod-line"></div>
+  <div class="stb-hint">Move cursor away to close.</div>
+</div>
+<!-- Mobile modal -->
+<div id="skill-modal-overlay">
+  <div id="skill-modal-box">
+    <button id="skill-modal-close" onclick="closeSkillModal()">✕ CLOSE</button>
+    <div style="font-family:var(--px);font-size:.24rem;color:var(--g2);letter-spacing:.12em;margin-bottom:.4rem;">▸ HOW THIS WORKS</div>
+    <div style="font-family:var(--px);font-size:.5rem;color:var(--white);margin-bottom:.5rem;text-shadow:0 0 10px rgba(255,255,255,0.3);" id="sm-name"></div>
+    <div style="font-family:var(--vt);font-size:1rem;color:var(--g4);line-height:1.8;margin-bottom:.5rem;" id="sm-body"></div>
+    <div style="font-family:var(--px);font-size:.28rem;color:var(--g3);padding:.3rem .5rem;border:1px solid var(--s5);display:inline-block;letter-spacing:.06em;margin-bottom:.4rem;" id="sm-range"></div>
+    <div style="font-family:var(--px);font-size:.24rem;color:var(--g2);line-height:1.9;letter-spacing:.04em;" id="sm-mod-line"></div>
+  </div>
+</div>
+<div class="page" data-page="7" id="page-7">
+  <div class="page-inner">
+    <div class="complete-banner">
+      <div class="cb-title">■ THE ARCHIVE HAS SEALED YOUR NAME ■</div>
+      <div class="cb-sub">"Your record is inscribed. Screenshot this and send it to your DM. What happens next is your story."</div>
+    </div>
+    <div class="final-sheet" id="final-sheet-content"></div>
+    <div style="display:flex;gap:.6rem;flex-wrap:wrap;margin-top:1.2rem">
+      <button class="btn btn-light btn-lg" id="print-btn" onclick="window.print()">🖨 PRINT / SAVE AS PDF</button>
+      <button class="btn btn-lg" id="copy-btn" onclick="copySheetToClipboard()">⎘ COPY FOR DISCORD</button>
+      <button class="btn btn-lg" id="share-btn" onclick="generateShareLink()">🔗 SHARE LINK</button>
+      <button class="btn btn-lg" onclick="restart()">↺ CREATE NEW CHARACTER</button>
+    </div>
+    <div style="font-family:var(--vt);font-size:.9rem;color:var(--g2);margin-top:.7rem">Tip: Screenshot the character sheet, or use Print → Save as PDF for your DM. Share Link encodes your character into the URL.</div>
+  </div>
+</div>
+</div><div id="class-modal-backdrop" onclick="if(event.target===this)closeClassModal()">
+  <div id="class-modal">
+    <div class="cm-header">
+      <div class="cm-icon-name">
+        <span class="cm-icon" id="cm-icon"></span>
+        <div>
+          <div style="font-family:var(--px);font-size:.72rem;color:var(--white);text-shadow:0 0 12px rgba(255,255,255,0.2), 2px 2px 0 #000" id="cm-name"></div>
+          <div style="font-family:var(--vt);font-size:.9rem;color:var(--g3);margin-top:.2rem" id="cm-tag"></div>
+          <div id="cm-diff" style="margin-top:.3rem"></div>
+        </div>
+      </div>
+      <button class="cm-close" onclick="closeClassModal()">✕ CLOSE</button>
+    </div>
+    <div class="cm-body">
+      <div class="cm-section-lbl">▸ IN LYTHERN — YOUR DARK PURPOSE</div>
+      <div class="cm-lore-block" id="cm-lore"></div>
+      <div class="cm-section-lbl">▸ USE-CASE SCENARIO — WHAT YOU ACTUALLY DO</div>
+      <div class="cm-scenario-block" id="cm-scenario"></div>
+      <div class="cm-section-lbl">▸ KEY ABILITIES</div>
+      <div id="cm-abilities"></div>
+    </div>
+    <div class="cm-footer">
+      <button class="btn btn-light btn-lg" id="cm-select-btn" style="flex:1;text-align:center"></button>
+      <button class="btn" onclick="closeClassModal()">◀ BACK TO LIST</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Background Canvas ──
+const bgCanvas=document.getElementById('bgCanvas');
+const bgCtx=bgCanvas.getContext('2d');
+let bgW,bgH,particles=[],pointLights=[];
+function initBackground(){
+  bgW=bgCanvas.width=window.innerWidth;bgH=bgCanvas.height=window.innerHeight;
+  pointLights=[];
+  const numLights=Math.floor(bgW/400)+1;
+  for(let i=0;i<numLights;i++)pointLights.push({x:(bgW/numLights)*i+(bgW/numLights/2)+(Math.random()*100-50),y:bgH*0.6+Math.random()*100,baseRadius:150+Math.random()*100,pulseOffset:Math.random()*Math.PI*2});
+  particles=[];for(let i=0;i<150;i++)spawnParticle(true);
+}
+window.addEventListener('resize',initBackground);
+const THEME_PARTICLES={
+  '':{ash:'rgba(120,120,120,',ember:'rgba(255,80,0,',drip:'rgba(138,17,17,',bg0:'#020202',bg1:'#060606',light0:'rgba(196,28,28,0.12)',light1:'rgba(100,10,10,0.05)'},
+  'blood-moon':{ash:'rgba(200,60,60,',ember:'rgba(255,20,0,',drip:'rgba(180,10,10,',bg0:'#080101',bg1:'#0f0202',light0:'rgba(255,20,20,0.18)',light1:'rgba(160,0,0,0.08)'},
+  'eclipse':{ash:'rgba(160,80,220,',ember:'rgba(220,120,255,',drip:'rgba(100,0,180,',bg0:'#03010a',bg1:'#08030f',light0:'rgba(160,80,240,0.15)',light1:'rgba(80,20,140,0.07)'},
+  'azure-moon':{ash:'rgba(80,180,220,',ember:'rgba(160,230,255,',drip:'rgba(20,100,160,',bg0:'#000508',bg1:'#000e14',light0:'rgba(30,160,220,0.14)',light1:'rgba(10,80,120,0.06)'}
+};
+function getTheme(){
+  const b=document.body;
+  if(b.classList.contains('blood-moon'))return'blood-moon';
+  if(b.classList.contains('eclipse'))return'eclipse';
+  if(b.classList.contains('azure-moon'))return'azure-moon';
+  return'';
+}
+function spawnParticle(rh=false){
+  const t=getTheme();const P=THEME_PARTICLES[t];
+  const tr=Math.random();let type='ash';
+  if(t==='eclipse'){if(tr>.88)type='spark';if(tr>.97)type='drip';}
+  else if(t==='azure-moon'){if(tr>.88)type='crystal';if(tr>.97)type='drip';}
+  else{if(tr>.85)type='ember';if(tr>.98)type='drip';}
+  let p={type,x:Math.random()*bgW,y:rh?Math.random()*bgH:bgH+10,life:Math.random()*.5+.5,size:Math.random()*2+1};
+  if(type==='ash'){p.vx=(Math.random()-.5)*.5;p.vy=-Math.random()*1-.5;p.color=P.ash;}
+  else if(type==='ember'||type==='spark'){
+    p.vx=(Math.random()-.5)*1.4;p.vy=-Math.random()*2.5-1;p.size=Math.random()*2.5+1;
+    p.color=type==='spark'?'rgba(200,140,255,':'rgba(255,100,0,';
+  }
+  else if(type==='crystal'){
+    p.vx=(Math.random()-.5)*0.8;p.vy=-Math.random()*1.5-.5;p.size=Math.random()*2+1;p.color='rgba(140,220,255,';
+  }
+  else{p.y=rh?Math.random()*bgH:-10;p.vx=(Math.random()-.5)*.3;p.vy=Math.random()*2+3;p.size=Math.random()*1.5+1;p.color=P.drip;}
+  particles.push(p);
+}
+function drawGothicSilhouettes(){
+  const t=getTheme();const P=THEME_PARTICLES[t];
+  bgCtx.fillStyle=P.bg0;bgCtx.fillRect(0,0,bgW,bgH);
+  bgCtx.fillStyle=P.bg1;const cw=80,sp=Math.max(300,bgW/4);
+  for(let i=0;i<=bgW+sp;i+=sp){
+    bgCtx.fillRect(i-cw/2,0,cw,bgH);
+    bgCtx.beginPath();bgCtx.moveTo(i-cw/2,bgH*.45);bgCtx.quadraticCurveTo(i+sp/2,bgH*.05,i+sp+cw/2,bgH*.45);bgCtx.lineTo(i+sp+cw/2,0);bgCtx.lineTo(i-cw/2,0);bgCtx.fill();
+    for(let j=0;j<20;j++){bgCtx.fillStyle=P.bg0;bgCtx.fillRect(i-cw/2+Math.random()*cw,Math.random()*bgH,4,4);}
+    bgCtx.fillStyle=P.bg1;
+  }
+}
+function animateBackground(){
+  drawGothicSilhouettes();const time=Date.now()*.002;const t=getTheme();const P=THEME_PARTICLES[t];
+  pointLights.forEach(l=>{const pulse=Math.sin(time*3+l.pulseOffset)*15;const r=Math.max(50,l.baseRadius+pulse);const g=bgCtx.createRadialGradient(l.x,l.y,0,l.x,l.y,r);g.addColorStop(0,P.light0);g.addColorStop(.5,P.light1);g.addColorStop(1,'rgba(0,0,0,0)');bgCtx.fillStyle=g;bgCtx.fillRect(l.x-r,l.y-r,r*2,r*2);});
+  for(let i=particles.length-1;i>=0;i--){let p=particles[i];p.x+=p.vx;p.y+=p.vy;
+    if(p.type==='crystal'){p.x+=Math.sin(time*2+p.y*.008)*0.4;p.life-=.0015;}
+    else if(p.type!=='drip'){p.x+=Math.sin(time+p.y*.01)*.5;p.life-=.002;}
+    else{p.vy+=.05;p.life-=.005;}
+    let alpha=p.life>.5?1:p.life*2;bgCtx.fillStyle=p.color+alpha+')';
+    if(p.type==='drip')bgCtx.fillRect(Math.floor(p.x),Math.floor(p.y),p.size,p.size*3);
+    else if(p.type==='crystal'){bgCtx.save();bgCtx.translate(p.x,p.y);bgCtx.rotate(time+p.life);bgCtx.fillRect(-p.size/2,-p.size/2,p.size,p.size);bgCtx.restore();}
+    else bgCtx.fillRect(Math.floor(p.x),Math.floor(p.y),Math.floor(p.size),Math.floor(p.size));
+    if(p.life<=0||p.y<-50||p.y>bgH+50){particles.splice(i,1);spawnParticle();}}
+  requestAnimationFrame(animateBackground);
+}
+initBackground();animateBackground();
+
+// ── Theme Switcher ──
+const THEME_CLASSES=['blood-moon','eclipse','azure-moon'];
+function setTheme(name){
+  THEME_CLASSES.forEach(c=>document.body.classList.remove(c));
+  if(name)document.body.classList.add(name);
+  particles=[];for(let i=0;i<150;i++)spawnParticle(true);
+  playSFX('forge');
+  document.querySelectorAll('.float-btn[id^="btn-"]').forEach(b=>b.classList.remove('active'));
+  const map={'':'btn-default','blood-moon':'btn-blood','eclipse':'btn-eclipse','azure-moon':'btn-azure'};
+  const btn=document.getElementById(map[name]||'btn-default');if(btn)btn.classList.add('active');
+}
+
+// ── Mouse Trail ──
+const tc=document.getElementById('trailCanvas');const tctx=tc.getContext('2d');
+let TW=tc.width=window.innerWidth,TH=tc.height=window.innerHeight;
+window.addEventListener('resize',()=>{TW=tc.width=window.innerWidth;TH=tc.height=window.innerHeight});
+const tpts=[];
+window.addEventListener('mousemove',e=>{for(let i=0;i<2;i++)tpts.push({x:e.clientX,y:e.clientY,vx:(Math.random()-.5)*.8,vy:(Math.random()-.5)*.8-.3,life:1,sz:Math.random()*1.5+.5})});
+(function anim(){tctx.clearRect(0,0,TW,TH);for(let i=tpts.length-1;i>=0;i--){const p=tpts[i];p.x+=p.vx;p.y+=p.vy;p.life-=.045;if(p.life<=0){tpts.splice(i,1);continue}tctx.globalAlpha=p.life*.4;tctx.fillStyle='rgba(200,50,50,1)';tctx.fillRect(Math.floor(p.x),Math.floor(p.y),Math.ceil(p.sz),Math.ceil(p.sz))}tctx.globalAlpha=1;requestAnimationFrame(anim)})();
+
+// ── Game Data ──
+const RACES=[
+  {id:'human',icon:'👤',name:'Human',desc:'Adaptable and resilient. Lythern\'s most common face — and the easiest to overlook.',tag:'RACIAL BONUS: +1 to any TWO stats of your choice',items:[{icon:'🗺',name:'Crumpled City Map',desc:'A worn map of Aelindor\'s back alleys. Insight checks are easier in familiar districts.',src:'HUMAN BLOODLINE'},{icon:'🪙',name:'Counterfeit Coin',desc:'Looks real enough. Useful for bribes — until someone holds it to the light.',src:'HUMAN BLOODLINE'}]},
+  {id:'halfelf',icon:'🌿',name:'Half-Elf',desc:'Born between two worlds, trusted by neither. Excels at reading people and slipping through cracks.',tag:'RACIAL BONUS: +1 CHA, +1 to any trained skill check',items:[{icon:'🎭',name:'Forged Letter of Passage',desc:'Grants entry to mid-district checkpoints. Expires if the guard rotation changes.',src:'HALF-ELF BLOODLINE'},{icon:'🌿',name:'Silver Tongue Tincture',desc:'One use. Advantage on a single Persuasion or Deception roll.',src:'HALF-ELF BLOODLINE'}]},
+  {id:'tiefling',icon:'🔥',name:'Tiefling',desc:'Marked by infernal blood. Feared in the slums, useful in the dark. The government eyes you with suspicion.',tag:'RACIAL BONUS: +1 INT, +1 CHA. You have Darkvision 60ft.',items:[{icon:'🕯',name:'Black Candle',desc:'Burns without wind extinguishing it. Common signal for underground contacts.',src:'TIEFLING BLOODLINE'},{icon:'📜',name:'Encrypted Ledger Page',desc:'A scrap of black-market accounting. Could be leverage — or a death warrant.',src:'TIEFLING BLOODLINE'}]},
+  {id:'orc',icon:'💪',name:'Half-Orc',desc:'Built to survive. In the slums of Lythern, being the strongest person in the room is your only credential.',tag:'RACIAL BONUS: +2 STR. Relentless Endurance: survive 1 knockout/day at 1 HP.',items:[{icon:'⛓',name:'Iron Shackle Fragment',desc:'Worn as a bracelet. A reminder of where you came from — or a tool for restraining enemies.',src:'HALF-ORC BLOODLINE'},{icon:'🩹',name:'Field Wound Kit',desc:'Basic bandages and salves. Stabilize a downed ally as a bonus action.',src:'HALF-ORC BLOODLINE'}]},
+  {id:'gnome',icon:'⚙️',name:'Gnome',desc:'Small, brilliant, invisible to those who don\'t look closely. Common in Lythern\'s fencing networks.',tag:'RACIAL BONUS: +2 INT. Gnomish Cunning: advantage on saves vs. magic.',items:[{icon:'🔧',name:'Lockpick Set (Partial)',desc:'3 picks remain. Enough to open a padlock if you\'re patient.',src:'GNOME BLOODLINE'},{icon:'📦',name:'Hidden Compartment Box',desc:'A small wooden box with a concealed inner tray. Perfect for contraband.',src:'GNOME BLOODLINE'}]},
+  {id:'halfling',icon:'🌀',name:'Halfling',desc:'Quick, quiet, perpetually underestimated. The perfect profile for someone who doesn\'t want to be found.',tag:'RACIAL BONUS: +2 DEX. Lucky: reroll 1s on attack/ability/save once per day.',items:[{icon:'🪝',name:'Compact Grappling Hook',desc:'Small but functional. Reaches second-story windows. Standard slum escape kit.',src:'HALFLING BLOODLINE'},{icon:'🎲',name:'Loaded Dice',desc:'One set. Advantage on Sleight of Hand checks at gambling dens.',src:'HALFLING BLOODLINE'}]},
+  {id:'dwarf',icon:'⛏',name:'Dwarf',desc:'Stoic and unbreakable. You remember the deep holds, even if the city tries to bury them.',tag:'RACIAL BONUS: +2 CON. Darkvision 60ft. Advantage vs. Poison.',items:[{icon:'🍻',name:'Iron Flask',desc:'Never spills, rarely empty. A trusted companion in the deep or the slums.',src:'DWARVEN BLOODLINE'},{icon:'🪨',name:'Whetstone',desc:'Maintains weapons perfectly. Small comfort in an imperfect world.',src:'DWARVEN BLOODLINE'}]},
+  {id:'elf',icon:'🌙',name:'Elf',desc:'Graceful, ancient, and disconnected from the fleeting panic of human lives.',tag:'RACIAL BONUS: +2 DEX. Darkvision 60ft. Immune to magical sleep.',items:[{icon:'📜',name:'Elven Sigil',desc:'A token that grants brief amnesty in higher districts, if used wisely.',src:'ELVEN BLOODLINE'},{icon:'🍃',name:'Mithril Wire',desc:'Incredibly thin, virtually unbreakable. Perfect for tripwires or snares.',src:'ELVEN BLOODLINE'}]},
+  {id:'goblin',icon:'🗡',name:'Goblin',desc:'Scrappy, cunning, and used to being on the bottom of the food chain.',tag:'RACIAL BONUS: +2 DEX. Nimble Escape: Disengage or Hide as a bonus action.',items:[{icon:'🐀',name:'Trained Rat',desc:'Good for distractions, tight spaces, or alarming the nobility.',src:'GOBLIN BLOODLINE'},{icon:'🏺',name:'Stink Bomb',desc:'A noxious distraction crafted from slum refuse. One use.',src:'GOBLIN BLOODLINE'}]},
+  {id:'custom',icon:'❓',name:'Custom Lineage',desc:'Forge your own bloodline. You are an anomaly the archive does not recognize.',tag:'RACIAL BONUS: Choose +2 to any single stat.',items:[{icon:'🎒',name:'Scavenged Pack',desc:'A mismatched collection of gear salvaged from wherever you came from.',src:'CUSTOM BLOODLINE'},{icon:'🦴',name:'Peculiar Keepsake',desc:'A reminder of your true, unspoken heritage.',src:'CUSTOM BLOODLINE'}]}
+];
+
+const CLASSES=[
+  {id:'barbarian',icon:'🪓',name:'Barbarian',desc:'Rage-fueled and relentless. The body as a weapon, pain as fuel. Nothing else left.',tag:'SAVES: STR & CON  ·  Hit Die: d12',group:'martial',difficulty:'beg',lowlife:'You stopped being afraid of death somewhere in the middle of the second beating. Now you are the thing other people are afraid of. In Lythern, that is not a personality — it is a survival strategy. The rage is not strength. It is everything you swallowed, finally coming back up.',scenario:'A gang enforcer has the party pinned in a dead-end alley. You enter Rage, shrug off two crossbow bolts through resistance, Reckless Attack the enforcer into the wall, and the fight ends in one brutal round. The alley remembers it.',items:[{icon:'🪓',name:'Greataxe (Notched)',desc:'Heavy, brutal, and yours. The notches are from things you have already survived.',src:'BARBARIAN CLASS'},{icon:'🩸',name:'Tooth-and-Leather Totem',desc:'Bound around your wrist. Something you never explain. Something that reminds you what losing felt like.',src:'BARBARIAN CLASS'}],skills:[{tier:'op',name:'Rage',desc:'Bonus action: enter a fury lasting 1 minute. Advantage on STR checks, +2 damage on STR attacks, resistance to physical damage. 2 uses per long rest.'},{tier:'op',name:'Reckless Attack',desc:'Attack with advantage — but the next attack against you also has advantage. High risk, high violence.'},{tier:'mid',name:'Danger Sense',desc:'Advantage on DEX saving throws against effects you can see. Traps, explosions, area spells.'},{tier:'mun',name:'Unarmored Defense',desc:'When not wearing armor: AC = 10 + DEX modifier + CON modifier.'},{tier:'custom',name:'Your Breaking Point',desc:'Define the one thing that triggers an involuntary Rage — the sight, smell, or words that make your Barbarian stop thinking. The GM will use it.'}]},
+  {id:'fighter',icon:'⚔',name:'Fighter',desc:'Loyalty for coin. Violence for contract. You\'ve stopped asking who you\'re killing for.',tag:'SAVES: STR & CON  ·  Hit Die: d10',group:'martial',difficulty:'beg',lowlife:'You have traded the idea of a cause for the certainty of payment. Every scar is a completed job. Every completed job is a bill paid. Somewhere along the way you stopped asking what the work was for and that, lowlife, is what makes you genuinely useful to people who cannot afford principles.',scenario:'The party needs to extract an informant from a Lythern checkpoint. You take the front — absorbing hits, controlling the choke point, buying the group time with Action Surge when the guards swarm. Nobody else survives if you fold first.',items:[{icon:'⚔',name:'Longsword + Shield',desc:'Battle-worn but functional. Marks you as former military — or former prisoner.',src:'FIGHTER CLASS'},{icon:'🛡',name:'Chainmail Vest (Repaired)',desc:'AC 13. Stitched over three times. Still holds.',src:'FIGHTER CLASS'}],skills:[{tier:'op',name:'Action Surge',desc:'Once per rest: take an additional full action. Two attacks, two abilities — any combination.'},{tier:'op',name:'Second Wind',desc:'Bonus action: regain 1d10 + Fighter level HP. Once per short rest.'},{tier:'mid',name:'Combat Superiority',desc:'3 Superiority Dice (d8). Trip, disarm, feint, rally. Each maneuver shifts the battlefield.'},{tier:'mun',name:'Weapon Proficiency (All)',desc:'Every weapon you can lift, you can use. No restrictions. No exceptions.'},{tier:'custom',name:'Your Fighting Style',desc:'Define your signature approach — ruthless efficiency, defensive wall, brawler, ambush specialist.'}]},
+  {id:'monk',icon:'👊',name:'Monk',desc:'Master of the body. The mind is the cage you built to survive in. The fists are the only honest part left.',tag:'SAVES: STR & DEX  ·  Hit Die: d8',group:'martial',difficulty:'int',lowlife:'You have mastered your body so thoroughly that you never have to feel what lives inside it. Every discipline is a wall. Every wall holds something back you are not ready to face. You strike faster than anyone in Lythern. And every single strike is an argument with yourself that you are winning. For now.',scenario:'A corrupt tax collector is being escorted through the lower district. You shadow the convoy alone, use Step of the Wind to close distance without triggering guards, land a Stunning Strike on the main target, and vanish before his escort can react.',items:[{icon:'🥋',name:'Wrappings of the Still Hand',desc:'Strips of dark linen, worn to the knuckles. They remember every impact.',src:'MONK CLASS'},{icon:'📿',name:'Cracked Prayer Beads',desc:'One bead broken. You know which moment broke it. You have never replaced it.',src:'MONK CLASS'}],skills:[{tier:'op',name:'Flurry of Blows',desc:'Spend 1 Ki: after the Attack action, make 2 unarmed strikes as a bonus action.'},{tier:'op',name:'Stunning Strike',desc:'Spend 1 Ki when you hit: target makes a CON save or is stunned until your next turn.'},{tier:'mid',name:'Ki Points',desc:'Your resource pool (= Monk level). Powers Flurry, Stunning Strike, Step of the Wind, Patient Defense.'},{tier:'mun',name:'Unarmored Movement',desc:'Speed increases by 10ft. Difficult terrain barely slows you.'},{tier:'custom',name:'Your Forbidden Technique',desc:'Name one specific fighting method your Monk developed alone — something no master taught you.'}]},
+  {id:'paladin',icon:'🛡',name:'Paladin',desc:'You still believe. In Lythern, that is either the most dangerous thing or the most pathetic.',tag:'SAVES: WIS & CHA  ·  Hit Die: d10',group:'martial',difficulty:'int',lowlife:'How magnificent. How utterly ruinous. Your god sees this city and does not look away — or perhaps does not look at all. Lythern will not break your faith quickly. It will do it slowly, piece by piece, making you choose between your vows and someone\'s survival, again and again, until there is no longer a difference.',scenario:'A plague breaks out in the lower ward. While others flee, you move through the sick, spending Lay on Hands to stabilize the dying, using Divine Health to walk through the contagion untouched. You become the only reason that block survives the week.',items:[{icon:'⚔',name:'Longsword (Blessed, Fading)',desc:'The blessing grows dimmer each night in Lythern. You have not told anyone.',src:'PALADIN CLASS'},{icon:'🕯',name:'Concealed Holy Symbol',desc:'Practicing religion without government approval is a crime. You practice anyway.',src:'PALADIN CLASS'}],skills:[{tier:'op',name:'Divine Smite',desc:'On a hit, expend a spell slot: deal 2d8 extra radiant damage (+1d8 per slot level above 1st).'},{tier:'op',name:'Lay on Hands',desc:'A pool of HP (5 × Paladin level) to distribute as healing or disease curing by touch.'},{tier:'mid',name:'Aura of Protection',desc:'At 6th level: add your CHA modifier to all saving throws for you and nearby allies.'},{tier:'mun',name:'Divine Health',desc:'Immune to disease. Lythern\'s plagues, infected wounds — none of it takes root in you.'},{tier:'custom',name:'Your Sacred Vow',desc:'Define one oath — what your Paladin will never do, and what they will always protect, no matter the cost.'}]},
+  {id:'ranger',icon:'🏹',name:'Ranger',desc:'A specialist from a distance. You watch lives end from far enough away to maintain the pretense it wasn\'t you.',tag:'SAVES: STR & DEX  ·  Hit Die: d10',group:'martial',difficulty:'beg',lowlife:'You tell yourself you are a hunter. But hunters face what they kill. You are something quieter. Something that watches life leave a body from far enough away that the face becomes a silhouette and the silhouette becomes a target and the target is just a problem that no longer exists.',scenario:'A black-market ledger needs recovering from a guarded warehouse. You scout the perimeter for an hour, map the guard rotation, mark your Favored Enemy, enter through a window you identified three blocks away, and are gone before the shift changes.',items:[{icon:'🏹',name:'Shortbow + 20 Arrows',desc:'Silent from distance. Standard equipment for anyone watching a mark.',src:'RANGER CLASS'},{icon:'🌿',name:'Herb Pouch',desc:'Enough for 3 natural antidotes against common poisons used in the lower districts.',src:'RANGER CLASS'}],skills:[{tier:'op',name:"Hunter's Mark",desc:'Bonus action: mark a target. Deal +1d6 damage and always sense their nearby position.'},{tier:'op',name:'Favored Enemy',desc:'Choose a creature type. Advantage on tracking, recall, and interaction checks against them.'},{tier:'mid',name:'Natural Explorer (Urban)',desc:"In cities: can't be surprised, move at full speed while stealthed, find twice as much useful information during downtime."},{tier:'mun',name:'Primeval Awareness',desc:'Spend a spell slot to sense certain creatures within 1 mile.'},{tier:'custom',name:'Your Quarry',desc:'Define the specific type of mark your Ranger hunts — corrupt officials, rival enforcers, government informants.'}]},
+  {id:'rogue',icon:'🗡',name:'Rogue',desc:"You have stolen from the desperate and called it survival. In Lythern that makes you indistinguishable from the government.",tag:'SAVES: DEX & INT  ·  Hit Die: d8',group:'martial',difficulty:'beg',lowlife:"You have taken from the grieving and called it efficiency. Vanished before anyone could hold you accountable. Left situations exactly when the consequences were becoming real. In Lythern this is not villainy. This is Tuesday.",scenario:"A corrupt tax ledger is locked in a mid-district bureau. You scout the route, pick two locks, slip past a sleeping guard with Cunning Action, photograph the ledger, and vanish — the party never enters the building at all. Clean.",items:[{icon:'🗡',name:'Dual Shortswords',desc:'Light, concealable, easy to explain away at a checkpoint.',src:'ROGUE CLASS'},{icon:'🧤',name:"Thieves' Tools (Full Set)",desc:'The difference between a locked door and a conversation.',src:'ROGUE CLASS'}],skills:[{tier:'op',name:'Sneak Attack',desc:'When you have advantage or an ally adjacent to target: +1d6 damage. Scales every level.'},{tier:'op',name:'Uncanny Dodge',desc:'Use your reaction when hit to halve damage. No roll required.'},{tier:'mid',name:'Cunning Action',desc:'Bonus action to Dash, Disengage, or Hide.'},{tier:'mun',name:"Thieves' Cant",desc:"The secret language and visual signals of Lythern's criminal networks."},{tier:'custom',name:'Your Signature Move',desc:'Name one specific trick your Rogue is known for — a particular distraction, disguise, or unique method of entry.'}]},
+  {id:'wizard',icon:'📖',name:'Wizard',desc:'Magic is contraband in Lythern. Every spell is a hanging offence. You cast them anyway.',tag:'SAVES: INT & WIS  ·  Hit Die: d6',group:'spell',difficulty:'adv',lowlife:'You have memorised entire philosophies of power that the Lord-Governor would burn you alive to possess. Your spellbook is a confession. Your focus rod is evidence. Every time you reach into the arcane you are signing your own execution warrant with invisible ink.',scenario:"The party needs to get past a warded vault door. You Identify the ward over a short rest, then dismantle it with a targeted Dispel Magic — saving everyone from a trap that would have levelled the block. No blood, no noise. Nobody knows you were there.",items:[{icon:'📖',name:'Weathered Spellbook',desc:'3 cantrips + 2 first-level spells, written in a personal cipher only you can read.',src:'WIZARD CLASS'},{icon:'🪄',name:'Focus Rod (Cracked, Repaired)',desc:'Your arcane focus. Slightly damaged — still functional. Do not drop it in front of guards.',src:'WIZARD CLASS'}],skills:[{tier:'op',name:'Arcane Recovery',desc:'Once per day on a short rest: recover spell slots up to half your Wizard level.'},{tier:'op',name:'Spellcasting (Intelligence)',desc:'Cast from your spellbook. Prepare spells = INT modifier + Wizard level. Most versatile caster in the game.'},{tier:'mid',name:'School Savant',desc:'Pick one magical school. Spells from that school cost half the time and gold to transcribe.'},{tier:'mun',name:'Ritual Casting',desc:'Cast ritual-tagged spells without expending a slot. Takes 10 extra minutes.'},{tier:'custom',name:'Forbidden Specialty',desc:'Name one specific type of magic your Wizard researches in secret — something Aelindor would execute you for.'}]},
+  {id:'sorcerer',icon:'💥',name:'Sorcerer',desc:'You did not study for this. The power erupts from somewhere you cannot explain and cannot control.',tag:'SAVES: CON & CHA  ·  Hit Die: d6',group:'spell',difficulty:'adv',lowlife:'You did not earn this. Did not sacrifice for it. The power chose you and now it bleeds through your skin in the dark and the people around you learn, one by one, to be careful standing too close.',scenario:"A city guard is about to sound the alarm on your position. You cast Subtle Spell through Metamagic — no components, no gesture, no sound. The guard feels something is wrong but cannot prove a crime was committed. You walk away. That is the whole difference.",items:[{icon:'💥',name:'Crackling Spell Focus',desc:'Arcs with static when you are angry. You have stopped being surprised by this.',src:'SORCERER CLASS'},{icon:'🧣',name:'Insulated Wrappings',desc:'Wrapped around your hands. Reduces the chance of accidental discharge. Reduces — not eliminates.',src:'SORCERER CLASS'}],skills:[{tier:'op',name:'Metamagic',desc:'Twist spells: double range, hit two targets, cast silently, extend duration.'},{tier:'op',name:'Spellcasting (Charisma)',desc:'Fewer spells than a Wizard but always available — no preparation needed.'},{tier:'mid',name:'Sorcery Points',desc:'Fuel for Metamagic and bonus spell slots. Managing this pool is the entire art of being a Sorcerer.'},{tier:'mun',name:'Font of Magic',desc:'Convert spell slots to Sorcery Points and back.'},{tier:'custom',name:'Your Wild Surge Trigger',desc:'Define the emotional state that causes your magic to spike uncontrollably. The GM will invoke this at the worst moments.'}]},
+  {id:'warlock',icon:'🕯',name:'Warlock',desc:"Something heard you. In your lowest moment — it answered. Now you owe it. You don't know what it wants yet.",tag:'SAVES: WIS & CHA  ·  Hit Die: d8',group:'spell',difficulty:'adv',lowlife:"You made a deal you did not fully read. Now something owns a piece of you that you cannot locate, cannot name, and cannot buy back. It has been quiet. Patient. In Lythern, quiet patience from something powerful means it is waiting for the right moment to collect.",scenario:"The party needs leverage over a district alderman. You use Invocations to eavesdrop through walls, learn the alderman's arrangement with the black market, then deliver the information to a rival faction — all without entering the building.",items:[{icon:'📜',name:'The Pact Token',desc:'A small object you cannot explain owning. It feels warm when your Patron is watching. It is warm more often lately.',src:'WARLOCK CLASS'},{icon:'🗡',name:'Eldritch-Marked Blade',desc:'A dagger with runes that appeared overnight. They are not in any book you have found.',src:'WARLOCK CLASS'}],skills:[{tier:'op',name:'Eldritch Blast',desc:'Force damage cantrip — scales to multiple beams, modified by Invocations. Use it every round.'},{tier:'op',name:'Invocations',desc:'Permanent passive upgrades — push on blast hits, see in the dark, cast rituals freely, speak telepathically.'},{tier:'mid',name:'Pact Magic',desc:'Few spell slots — but they always return on a short rest.'},{tier:'mun',name:'Mystic Arcanum',desc:'At higher levels, a single daily cast of a powerful spell granted by your Patron.'},{tier:'custom',name:"Your Patron's Price",desc:"Define what you believe your Patron eventually wants from you — the favour you're dreading, the cost you suspect is coming."}]},
+  {id:'cleric',icon:'✝',name:'Cleric',desc:'Faith is sedition in Aelindor. Every miracle condemns you further. You believe anyway.',tag:'SAVES: WIS & CHA  ·  Hit Die: d8',group:'spell',difficulty:'int',lowlife:'You speak for a god in a city that executed the last three people who tried. You conduct sacraments in the backs of flooded basements while the government burns churches and calls it urban renewal.',scenario:"An ambush leaves two party members unconscious and bleeding out. You burn Channel Divinity to turn the remaining attackers, spend every Lay on Hands charge stabilizing your allies, then use your last spell slot on Healing Word. The session ends because of you.",items:[{icon:'✝',name:'Concealed Holy Symbol',desc:'Worn beneath clothing. Practicing religion without government approval is a crime in Aelindor.',src:'CLERIC CLASS'},{icon:'⚗',name:'2× Healing Potion',desc:'Each restores 2d4+2 HP. Technically confiscated property if found by a guard.',src:'CLERIC CLASS'}],skills:[{tier:'op',name:'Channel Divinity',desc:'Once per rest: choose from two domain-specific effects. Turn undead or invoke your domain power.'},{tier:'op',name:'Spellcasting (Wisdom)',desc:'Domain spells always prepared. Best healer in the game if you commit to it.'},{tier:'mid',name:'Domain Feature',desc:'Life grants armour proficiency. Trickery grants an illusory duplicate.'},{tier:'mun',name:'Ritual Casting',desc:'Cast ritual-tagged spells without slots. Takes 10 extra minutes.'},{tier:'custom',name:'Your Sacred Vow',desc:'Define one oath — what you will never do, and what you will always protect, regardless of personal cost.'}]},
+  {id:'druid',icon:'🌿',name:'Druid',desc:'You carry the memory of living things in a city that has killed everything green.',tag:'SAVES: INT & WIS  ·  Hit Die: d8',group:'spell',difficulty:'int',lowlife:'The cobblestones remember the roots they buried. You can hear them. This does not make you powerful in Lythern. It makes you haunted by everything that has been paved over, taxed into extinction, and forgotten.',scenario:"The party needs to move through a guarded district undetected. You Wild Shape into a rat, scout the full route in ten minutes, return with a perfect mental map of guard positions, locked gates, and two exits the rest of the party never would have found.",items:[{icon:'🌿',name:'Druidic Focus (Root Carved)',desc:'A length of twisted root, grown nowhere near Lythern. You brought it from somewhere else.',src:'DRUID CLASS'},{icon:'🪨',name:'Touchstone of the Wild',desc:'A smooth stone that grows warm near living things. Cold near everything in Lythern.',src:'DRUID CLASS'}],skills:[{tier:'op',name:'Wild Shape',desc:'Twice per short rest: transform into a beast you have seen. Scouting and utility forms from level 2.'},{tier:'op',name:'Spellcasting (Wisdom)',desc:'Prepared fresh each day from the entire Druid list. Every day is a new loadout.'},{tier:'mid',name:"Nature's Recovery",desc:'Once per day on a short rest: recover spell slots up to half your Druid level.'},{tier:'mun',name:'Druidic',desc:'The secret language of Druids — spoken aloud and as hidden signs in the natural world.'},{tier:'custom',name:'Your Lost Place',desc:'Name the natural location your Druid came from — what it looked like, and what was done to it that drove you here.'}]},
+  {id:'bard',icon:'🎭',name:'Bard',desc:"You trade in other people's pain. Call it art. Sell it as performance. Everyone has a story worth exploiting.",tag:'SAVES: DEX & CHA  ·  Hit Die: d8',group:'spell',difficulty:'int',lowlife:"You have dressed grief up as entertainment and charged admission. Turned trauma into something audiences applaud. Every story you perform was someone else's worst moment, and you made it beautiful, and you kept the coin.",scenario:"A guard captain is blocking the party's exit. You perform at the checkpoint — use Cutting Words to ruin the captain's Perception roll, Bardic Inspiration to boost the Rogue's Deception check, and the party walks out with forged papers that shouldn't have worked.",items:[{icon:'🎭',name:"Artisan's Disguise Kit",desc:'Materials for 5 convincing disguises. Includes forged guild papers and a wig that has fooled three guard captains.',src:'BARD CLASS'},{icon:'🎵',name:'Enchanted Instrument',desc:'A small lute or flute. Spells cast through it gain +1 to your spell save DC.',src:'BARD CLASS'}],skills:[{tier:'op',name:'Bardic Inspiration',desc:'Give an ally a d6 die they can add to any roll within 10 minutes. Scales to d8, d10, d12.'},{tier:'op',name:'Cutting Words',desc:"Use your reaction to subtract your Bardic die from an enemy's roll. Can turn a hit into a miss."},{tier:'mid',name:'Jack of All Trades',desc:"Add half your proficiency bonus to any skill you're not proficient in."},{tier:'mun',name:'Song of Rest',desc:'During a short rest: allies who hear you regain extra HP from Hit Dice.'},{tier:'custom',name:'Your Cover Identity',desc:'Define the persona your Bard performs under — a stage name, a fabricated history, one specific lie they tell constantly.'}]}
+];
+
+const STAT_INFO={str:{label:'STR',desc:'Strength: melee attacks, carrying, breaking things.',skills:['Athletics']},dex:{label:'DEX',desc:'Dexterity: ranged attacks, stealth, reflexes, AC.',skills:['Acrobatics','Stealth','Sleight of Hand']},con:{label:'CON',desc:'Constitution: hit points, concentration spells, endurance.',skills:['Endurance']},int:{label:'INT',desc:'Intelligence: spells (Wizard), knowledge checks, investigation.',skills:['Arcana','History','Investigation']},wis:{label:'WIS',desc:'Wisdom: perception, insight, healing spells (Cleric/Druid).',skills:['Insight','Perception','Survival']},cha:{label:'CHA',desc:'Charisma: persuasion, deception, social rolls, Bard/Warlock/Sorcerer spells.',skills:['Deception','Intimidation','Persuasion','Performance']}};
+const ALL_TRAINED=['Athletics','Acrobatics','Stealth','Arcana','History','Investigation','Insight','Perception','Survival','Deception','Intimidation','Persuasion','Sleight of Hand','Endurance','Performance'];
+const RACE_BONUS={human:[],halfelf:['cha'],tiefling:['int','cha'],orc:['str'],gnome:['int'],halfling:['dex'],dwarf:['con'],elf:['dex'],goblin:['dex']};
+const CLASS_STAT_TIPS={barbarian:'STR for attacks. CON for HP. Dump INT and CHA.',fighter:'STR or DEX for attacks. CON for survival.',monk:'DEX for AC and attacks. WIS for Ki saves.',paladin:'STR for attacks. CHA for aura and spells.',ranger:'DEX for attacks and AC. WIS for spells.',rogue:'DEX for everything — attacks, AC, stealth.',wizard:'INT as high as possible. CON second for concentration.',sorcerer:'CHA for spells. CON for concentration and HP.',warlock:'CHA for Eldritch Blast and spells. CON second.',cleric:'WIS for spells. CON second. STR if front-line.',druid:'WIS for spells. CON for concentration and HP.',bard:'CHA for spells and abilities. DEX for AC.'};
+
+// ── Preset Loadouts ──
+const CLASS_PRESETS={
+  barbarian:[
+    {name:`BRAWLER`,desc:`Pure aggression. Hits hard, takes hits harder.`,stats:{str:15,dex:12,con:14,int:8,wis:10,cha:8}},
+    {name:`JUGGERNAUT`,desc:`Built to never go down. Your HP is the party's safety net.`,stats:{str:14,dex:10,con:15,int:8,wis:12,cha:8}},
+    {name:`SAVAGE`,desc:`Reckless and fast. You go in first and hit twice.`,stats:{str:15,dex:14,con:13,int:8,wis:8,cha:10}}
+  ],
+  fighter:[
+    {name:`SOLDIER`,desc:`Balanced and reliable. Does everything adequately, nothing poorly.`,stats:{str:15,dex:12,con:14,int:10,wis:10,cha:8}},
+    {name:`DUELIST`,desc:`Quick and precise. Built for one-on-one dominance.`,stats:{str:13,dex:15,con:14,int:10,wis:10,cha:8}},
+    {name:`IRON WALL`,desc:`You absorb damage so others don't have to.`,stats:{str:14,dex:10,con:15,int:10,wis:12,cha:8}}
+  ],
+  monk:[
+    {name:`STRIKER`,desc:`Fast hands, faster feet. You end fights before they escalate.`,stats:{str:10,dex:15,con:12,int:10,wis:14,cha:8}},
+    {name:`GHOST`,desc:`You hit, then disappear. Nobody can touch what they can't find.`,stats:{str:8,dex:15,con:12,int:10,wis:14,cha:10}},
+    {name:`IRON PALM`,desc:`You don't dodge. You endure — and then you retaliate.`,stats:{str:12,dex:14,con:14,int:8,wis:13,cha:8}}
+  ],
+  paladin:[
+    {name:`CRUSADER`,desc:`Front line faith. You hit hard and your presence protects the party.`,stats:{str:15,dex:10,con:13,int:8,wis:10,cha:14}},
+    {name:`HERALD`,desc:`Charisma-first. Your aura is why the party survives.`,stats:{str:13,dex:10,con:12,int:8,wis:10,cha:15}},
+    {name:`WARDEN`,desc:`Defensive anchor. You keep people alive including yourself.`,stats:{str:14,dex:8,con:14,int:8,wis:12,cha:13}}
+  ],
+  ranger:[
+    {name:`HUNTER`,desc:`Patient and precise. You pick targets and eliminate them quietly.`,stats:{str:10,dex:15,con:13,int:10,wis:14,cha:8}},
+    {name:`TRACKER`,desc:`You find what others miss and know the terrain better than anyone.`,stats:{str:12,dex:14,con:12,int:10,wis:15,cha:8}},
+    {name:`SKIRMISHER`,desc:`Mobile and unpredictable. You never fight from the same spot twice.`,stats:{str:10,dex:15,con:14,int:8,wis:13,cha:8}}
+  ],
+  rogue:[
+    {name:`CUTPURSE`,desc:`Classic thief. In and out before anyone knows you were there.`,stats:{str:8,dex:15,con:13,int:14,wis:10,cha:10}},
+    {name:`ENFORCER`,desc:`You solve problems with fear first, violence second.`,stats:{str:13,dex:15,con:12,int:10,wis:8,cha:12}},
+    {name:`GHOST`,desc:`Stealth specialist. You exist only when you choose to.`,stats:{str:8,dex:15,con:12,int:12,wis:14,cha:8}}
+  ],
+  wizard:[
+    {name:`ARCANIST`,desc:`Maximum spell power. Glass cannon — don't get hit.`,stats:{str:8,dex:13,con:14,int:15,wis:12,cha:8}},
+    {name:`SCHOLAR`,desc:`Versatile and prepared. You have an answer for everything.`,stats:{str:8,dex:12,con:13,int:15,wis:14,cha:8}},
+    {name:`BATTLE MAGE`,desc:`Tougher than most wizards. You stay upright long enough to finish the spell.`,stats:{str:10,dex:12,con:15,int:15,wis:8,cha:8}}
+  ],
+  sorcerer:[
+    {name:`WILD BLOOD`,desc:`Raw power, minimal control. When it hits, it devastates.`,stats:{str:8,dex:13,con:14,int:10,wis:10,cha:15}},
+    {name:`CHARMER`,desc:`Social powerhouse who can also set things on fire.`,stats:{str:8,dex:12,con:12,int:10,wis:10,cha:15}},
+    {name:`SURVIVOR`,desc:`Sturdy for a spellcaster. You don't fold when someone gets close.`,stats:{str:10,dex:12,con:15,int:8,wis:10,cha:14}}
+  ],
+  warlock:[
+    {name:`VOICE OF RUIN`,desc:`Eldritch Blast every round. Simple, consistent, terrifying.`,stats:{str:8,dex:13,con:14,int:10,wis:10,cha:15}},
+    {name:`SHADOW BROKER`,desc:`Information and manipulation. Your Patron taught you how people work.`,stats:{str:8,dex:12,con:12,int:12,wis:10,cha:15}},
+    {name:`CURSED BLADE`,desc:`You fight up close and let your pact do the rest.`,stats:{str:13,dex:12,con:14,int:8,wis:8,cha:15}}
+  ],
+  cleric:[
+    {name:`HEALER`,desc:`The party lives because of you. Pure support, maximum impact.`,stats:{str:10,dex:10,con:14,int:8,wis:15,cha:12}},
+    {name:`WAR PRIEST`,desc:`You fight and heal. Front line faith with divine backup.`,stats:{str:14,dex:8,con:14,int:8,wis:15,cha:10}},
+    {name:`PROPHET`,desc:`Wisdom-maxed oracle. Your spells hit harder and save more.`,stats:{str:8,dex:12,con:13,int:10,wis:15,cha:12}}
+  ],
+  druid:[
+    {name:`WILD HEART`,desc:`Wild Shape specialist. You scout, flank, and surprise.`,stats:{str:10,dex:13,con:14,int:10,wis:15,cha:8}},
+    {name:`STORM CALLER`,desc:`Offensive caster. Your spells reshape the battlefield.`,stats:{str:8,dex:12,con:14,int:10,wis:15,cha:10}},
+    {name:`GROVE WARDEN`,desc:`Defensive and resilient. You outlast everything.`,stats:{str:10,dex:10,con:15,int:8,wis:15,cha:10}}
+  ],
+  bard:[
+    {name:`FACE`,desc:`The party's voice. Every social encounter bends around you.`,stats:{str:8,dex:13,con:12,int:10,wis:10,cha:15}},
+    {name:`INSPIRE`,desc:`Support specialist. Your allies fight better because you're there.`,stats:{str:8,dex:14,con:12,int:10,wis:10,cha:15}},
+    {name:`BLADE SINGER`,desc:`You perform and you fight. The crowd never knows which is the act.`,stats:{str:10,dex:14,con:13,int:10,wis:8,cha:15}}
+  ]
+};
+
+// ── How To Play narrations ──
+const CLASS_HOW_TO_PLAY={
+  barbarian:`When combat starts, use your bonus action to Rage — then attack. Every turn: attack, attack. If something hits you hard, good, you resist half the damage anyway. Your job is to be the thing the enemy is too busy killing to look past.`,
+  fighter:`Your first turn: Action Surge if the situation is critical, Second Wind if you're already bleeding. Otherwise attack, reposition, attack again. You are the most consistent combatant at the table. When everyone else is panicking, you are still swinging.`,
+  monk:`Move first — you're the fastest. Hit with your action, then spend 1 Ki on Flurry of Blows for two bonus strikes. If a key target needs to stop moving, land Stunning Strike and let the party clean up. You reward patience and punish anyone who underestimates your reach.`,
+  paladin:`Open with a big weapon attack and burn a spell slot on Divine Smite for a damage spike that gets everyone's attention. Between fights, use Lay on Hands to top up your allies. You are simultaneously the party's heaviest hit and its field medic.`,
+  ranger:`Mark your target with Hunter's Mark as a bonus action before you attack — every hit does extra damage from that point on. Stay at range, stay mobile, and trust your read on the environment. You notice things others miss. Use that.`,
+  rogue:`Position matters more than anything. Get an ally adjacent to your target, or get Advantage somehow — then Sneak Attack lands and it hurts. Use Cunning Action to Hide after, so next turn you do it again. You are not a brawler. You are a precision instrument.`,
+  wizard:`Prepare spells each long rest based on what the day might bring. In combat: crowd control first, damage second. One well-placed spell can end an encounter before it starts. Outside combat, you are the answer to problems no one else can solve.`,
+  sorcerer:`Your spells are always ready — no preparation needed. Use Metamagic to shape them: Subtle Spell when you can't be seen casting, Twin Spell to hit two targets, Quicken to cast and attack in the same turn. Manage your Sorcery Points — they don't come back until a long rest.`,
+  warlock:`Eldritch Blast every round — it scales, it's reliable, and your Invocations make it dangerous. Your spell slots are few but recharge on a short rest, so take breaks when you can. Outside combat, your Invocations make you one of the most useful characters in the party.`,
+  cleric:`Healing Word as a bonus action to pick up fallen allies without losing your turn. Channel Divinity when the situation demands it. Your domain spells are always prepared — lean on them. You are the reason the party survives the sessions that should have ended badly.`,
+  druid:`Wild Shape twice per short rest for scouting or absorbing damage as a beast — when that form drops, you're back with all your HP. In spell form, your prepared list changes daily so adapt to what's coming. You are the most flexible character at the table if you plan ahead.`,
+  bard:`Hand out Bardic Inspiration at the start of every encounter — your allies add that die to any roll they choose. Use Cutting Words reactively when an enemy is about to land something brutal. You don't need to be the one dealing damage. You are the reason everyone else deals more.`
+};
+const RACE_CLASS_LORE={'human-fighter':'The most common sight in Lythern\'s mercenary dens. Unremarkable until they are not.','human-rogue':'The city is full of human thieves. You intend to be the last one standing.','halfelf-bard':'You were born performing for two audiences simultaneously. You never stopped.','halfelf-warlock':'Both sides of your blood made deals they regret. You continue the tradition.','tiefling-warlock':'The government assumes you already have a patron. You decided to make it true.','tiefling-sorcerer':'They said your blood was cursed. You have been proving them right ever since.','orc-barbarian':'The rage was there before Lythern. The city just gave it a target.','orc-fighter':'You traded the battlefield for the streets. The pay is worse. The politics are identical.','gnome-wizard':'Your spellbook is encrypted twice. Your workshop has three exits. You are not being paranoid.','gnome-rogue':'Small, invisible, and in possession of every secret in the fencing network.','halfling-rogue':'Nobody checks the halfling twice. You have built an entire career on that oversight.','halfling-ranger':'You move through this city like you were born in its walls. You might as well have been.'};
+const LYTHERN_NAMES=['Vrael','Solen','Mira','Cask','Dova','Rhen','Talis','Joryn','Vex','Nara','Gault','Lorn','Sable','Finn','Dusk','Aris','Kael','Mott','Sera','Bram','Tal','Wren','Cinder','Hex','Mael','Ryke','Soot','Vesper','Dag','Lyss','Oryn','Brec','Voss','Nett','Shade','Pike','Crow','Hask','Rel','Moth'];
+
+const ALIGNMENTS=[
+  {id:'lawful-good',law:'LAWFUL',eth:'GOOD',icon:'⚖',desc:'Bound by code. Protects others within a system. Lythern considers this naive — or dangerous.'},
+  {id:'neutral-good',law:'NEUTRAL',eth:'GOOD',icon:'🕊',desc:'Does what is right without needing rules to say so. Exhausting in a city that punishes it.'},
+  {id:'chaotic-good',law:'CHAOTIC',eth:'GOOD',icon:'🔥',desc:'Ignores systems to help people. Governments hate you specifically. You have earned that.'},
+  {id:'lawful-neutral',law:'LAWFUL',eth:'NEUTRAL',icon:'📋',desc:'Order above all. Good and evil are complications. The contract is what matters.'},
+  {id:'true-neutral',law:'TRUE',eth:'NEUTRAL',icon:'⚙',desc:'Survival first. Everything else is philosophy for people with enough to eat.'},
+  {id:'chaotic-neutral',law:'CHAOTIC',eth:'NEUTRAL',icon:'🌀',desc:'Personal freedom. No masters. No obligations you did not choose. No exceptions.'},
+  {id:'lawful-evil',law:'LAWFUL',eth:'EVIL',icon:'👑',desc:'Uses systems to exploit people. Follows every rule while violating every spirit. The Lord-Governor\'s favourite.'},
+  {id:'neutral-evil',law:'NEUTRAL',eth:'EVIL',icon:'🗡',desc:'Pure self-interest. No code. No sentiment. Loyalty lasts exactly as long as the payment does.'},
+  {id:'chaotic-evil',law:'CHAOTIC',eth:'EVIL',icon:'💀',desc:'Destruction for its own sake. No plan. No patron. Even Lythern steps aside for you.'}
+];
+
+const PERSONALITY_TRAITS=[
+  'I trust coin more than people',
+  'I keep one escape route in mind at all times',
+  'I never forget a debt — owed or owing',
+  'I speak plainly. Flattery is a weapon I don\'t waste',
+  'I\'ve seen enough bodies to stop flinching',
+  'I still believe something better is possible. I hate that about myself',
+  'Loyalty is a transaction. I\'m honest about that',
+  'I collect information the way others collect coin',
+  'I don\'t start fights. I end them',
+  'I sleep lightly and always face the door',
+  'I\'ve learned to read a room before I enter it',
+  'I hold grudges longer than I hold coin'
+];
+
+const CLASS_SAVES={barbarian:['str','con'],fighter:['str','con'],monk:['str','dex'],paladin:['wis','cha'],ranger:['str','dex'],rogue:['dex','int'],wizard:['int','wis'],sorcerer:['con','cha'],warlock:['wis','cha'],cleric:['wis','cha'],druid:['int','wis'],bard:['dex','cha']};
+
+// ── INTRO LINES ──
+const INTRO_LINES=[
+  {text:'I have watched a great many souls pass through these streets.',cls:'heavy'},
+  {text:'Most of them do not last long enough to be interesting.',cls:''},
+  {text:'',cls:'blank'},
+  {text:'But you. You I want to know about.',cls:'heavy',pause:true},
+  {text:'',cls:'blank'},
+  {text:'Two hundred years ago, two men built something the world had not seen the likes of.',cls:''},
+  {text:'Sir Cael Aelintaine — the Sword-Saint. Not a lord who wore virtue like armour, but one who bled it. His blade was for protection. His throne was for service. He meant every word.',cls:''},
+  {text:'',cls:'blank'},
+  {text:'Beside him stood Tarquin Dorne. The sharpest mind in five kingdoms, they said. A man who could read a harvest, a market, a grievance — and know what a people needed before the people knew to ask.',cls:''},
+  {text:'',cls:'blank'},
+  {text:'Together they raised Aelindor. Small. Honest. Rooted so deep you could feel it in the ground beneath your feet.',cls:''},
+  {text:'They named it after themselves. A kingdom that belonged to both of them — and therefore, in their minds, to everyone.',cls:'heavy',pause:true},
+  {text:'',cls:'blank'},
+  {text:'That was then.',cls:'heavy'},
+  {text:'',cls:'blank'},
+  {text:'170 years on — Aelindor is thriving. A seat at the Confederation table. An economy swollen by sixty percent inside a single decade.',cls:''},
+  {text:'Remarkable, is it not. For a fiefdom that has allied with no one, and traded beyond its own walls for over two centuries.',cls:''},
+  {text:'',cls:'blank'},
+  {text:'Ask yourself where the coin comes from.',cls:'heavy'},
+  {text:'Ask yourself why neighbouring kingdoms keep receiving generous gifts from a lord who preaches isolation.',cls:''},
+  {text:'Ask yourself — why no one asks.',cls:'heavy',pause:true},
+  {text:'',cls:'blank'},
+  {text:'Vesuvius Aelintaine. Great-grandson of the Sword-Saint. Lord of Aelindor.',cls:'heavy'},
+  {text:'He speaks beautifully. Of sovereignty. Of sacred tradition. Of a kingdom that bows to no one.',cls:''},
+  {text:'And buried beneath all of it — in the coldest, most forgotten rot of everything he rules — is Lythern.',cls:''},
+  {text:'',cls:'blank'},
+  {text:'Rogues. Cutthroats. Convicts and mercenaries and the kind of souls polite kingdoms pretend do not exist.',cls:''},
+  {text:'Vesuvius sets them loose on caravans, stagecoaches, shipments moving through foreign roads.',cls:''},
+  {text:'Strips them clean. Delivers the spoils to allied courts as peace offerings. As generosity. As the grace of a magnanimous lord.',cls:''},
+  {text:'',cls:'blank'},
+  {text:'The gleaming economy of a proud and sovereign fiefdom.',cls:''},
+  {text:'Built entirely on theft wearing the mask of diplomacy.',cls:'heavy',pause:true},
+  {text:'',cls:'blank'},
+  {text:'Now. Lythern itself.',cls:'heavy'},
+  {text:'',cls:'blank'},
+  {text:'Cold. Damp. The kind of place that settles into your bones like it has always been there.',cls:''},
+  {text:'It does not welcome you. It does not threaten you. It simply waits — to see what you are made of, and how much of it is worth taking.',cls:''},
+  {text:'',cls:'blank'},
+  {text:'Show no value in these streets.',cls:'heavy'},
+  {text:'Not coin. Not steel. Not a ring that catches the light at the wrong moment.',cls:''},
+  {text:'For it matters not whether it be the men you call brothers in the dark, or the guardsmen sworn to crown your protection —',cls:''},
+  {text:'not one of them has any qualm in prying it from your cold, dead hands.',cls:'heavy'},
+  {text:'',cls:'blank'},
+  {text:'There is no one here who is on your side.',cls:''},
+  {text:'That is not a warning. That is simply the first thing Lythern teaches everyone who enters it thinking otherwise.',cls:''},
+  {text:'',cls:'blank'},
+  {text:'The Sword-Saint built this kingdom on the belief that people could be trusted.',cls:''},
+  {text:'His blood spent two hundred years proving him wrong.',cls:'heavy',pause:true},
+  {text:'',cls:'blank'},
+  {text:'And yet — here you stand.',cls:''},
+  {text:'Knowing all of that.',cls:''},
+  {text:'Still here.',cls:'heavy'},
+  {text:'',cls:'blank'},
+  {text:'I want to know about you.',cls:''},
+  {text:'Not what you call yourself. Not the name you gave the last person who asked.',cls:''},
+  {text:'I mean what brought you here. What series of choices — or perhaps the complete absence of them — led to this.',cls:''},
+  {text:'',cls:'blank'},
+  {text:'I wonder what kind of life a person has to live to wind up in a place like Lythern.',cls:'heavy'},
+  {text:'What they had to lose before losing it stopped meaning anything.',cls:''},
+  {text:'What they had to do — or become — before they stopped flinching at what they saw in the mirror.',cls:''},
+  {text:'',cls:'blank'},
+  {text:'Because God did not look away from you.',cls:'heavy'},
+  {text:'Do not flatter yourself with that.',cls:''},
+  {text:'',cls:'blank'},
+  {text:'God looked directly at you.',cls:'heavy'},
+  {text:'Saw exactly what you were. What you had done. What you were capable of.',cls:''},
+  {text:'And turned away on purpose.',cls:'heavy'},
+  {text:'',cls:'blank'},
+  {text:'The sins of a past life. The debts of this one. The things you told yourself you had no choice about.',cls:''},
+  {text:'He saw all of it.',cls:''},
+  {text:'Every single thing you buried. Every name you don\'t say out loud anymore.',cls:''},
+  {text:'',cls:'blank'},
+  {text:'And he decided you were not worth the mercy.',cls:'heavy'},
+  {text:'',cls:'blank'},
+  {text:'So here you are.',cls:''},
+  {text:'Lythern. The city God left you in.',cls:'heavy'},
+  {text:'Cold. Forgotten. Surrounded by people who earned the same verdict.',cls:''},
+  {text:'',cls:'blank'},
+  {text:'No one finds this place by accident.',cls:'heavy'},
+  {text:'You were sent here.',cls:''},
+  {text:'',cls:'blank'},
+  {text:'The only question that remains —',cls:''},
+  {text:'',cls:'blank'},
+  {text:'So.',cls:'heavy',pause:true},
+  {text:'',cls:'blank'},
+  {text:'NOW, LOWLIFE — WHAT KIND OF SCUM ARE YOU?',cls:'red-line'}
+];
+
+// ── State ──
+let S={
+  page:0,name:'',race:null,classId:null,customSkill:'',lore:'',
+  stats:{str:8,dex:8,con:8,int:8,wis:8,cha:8},trainedSkills:[],
+  alignment:null,traits:[],appearance:'',age:'',distinguishing:'',flaw:'',bond:'',
+  customRace:{name:'', stat:'str', desc:''},
+  swappedSkill:{index:-1, name:'', desc:''},
+  luck: null, karma: 'NEUTRAL'
+};
+
+// ── Helpers ──
+const mod=v=>Math.floor((v-10)/2);
+const modStr=v=>{const m=mod(v);return(m>=0?'+':'')+m};
+const diceRange=(notation,bonus=0)=>{
+  // converts e.g. "2d8" or "d10" to "X–Y" human range
+  const m=notation.match(/(\d*)d(\d+)/);
+  if(!m)return notation;
+  const num=parseInt(m[1]||'1'),sides=parseInt(m[2]);
+  return`${num+bonus}–${num*sides+bonus} (${notation}${bonus!==0?(bonus>0?'+':'')+bonus:''})`;
+};
+const ptCost=v=>v<=13?v-8:v===14?7:9;
+const calcUsed=()=>Object.values(S.stats).reduce((t,v)=>t+ptCost(v),0);
+const getBonus=k=>{
+  if (S.race === 'custom') return S.customRace.stat === k ? 2 : 0;
+  return (RACE_BONUS[S.race]||[]).includes(k) ? 1 : 0;
+};
+const finalStat=k=>S.stats[k]+getBonus(k);
+const calcHP=()=>{const cls=CLASSES.find(c=>c.id===S.classId);if(!cls)return 8;const d={d6:6,d8:8,d10:10,d12:12}[cls.tag.match(/d\d+/)?.[0]]||8;return d+mod(finalStat('con'))};
+const getSpeed=()=>{
+  if (S.race==='halfling' || S.race==='dwarf' || S.race==='gnome' || S.race==='goblin') return 25;
+  if (S.race==='elf') return 35;
+  return 30;
+};
+const getPassivePerception=()=>10+mod(finalStat('wis'))+(S.trainedSkills.includes('Perception')?2:0);
+
+// ── localStorage persistence ──
+function saveProgress(){
+  try{localStorage.setItem('lowlife_char',JSON.stringify(S));}catch(e){}
+}
+function loadProgress(){
+  try{
+    const saved=localStorage.getItem('lowlife_char');
+    if(saved){const p=JSON.parse(saved);Object.assign(S,p);}
+  }catch(e){}
+}
+
+// ── Share Link ──
+function encodeState(state){try{return btoa(unescape(encodeURIComponent(JSON.stringify(state))));}catch(e){return null;}}
+function decodeState(str){try{return JSON.parse(decodeURIComponent(escape(atob(str))));}catch(e){return null;}}
+
+function generateShareLink(){
+  const encoded=encodeState(S);
+  if(!encoded){alert('Could not generate link.');return;}
+  const url=window.location.href.split('#')[0]+'#char='+encoded;
+  navigator.clipboard.writeText(url).then(()=>{
+    const btn=document.getElementById('share-btn');
+    if(btn){btn.textContent='✓ LINK COPIED';setTimeout(()=>{btn.textContent='🔗 SHARE LINK';},2200);}
+  }).catch(()=>{
+    prompt('Copy this link:',url);
+  });
+}
+
+// ── Resume Toast ──
+function checkResume(){
+  try{
+    const saved=localStorage.getItem('lowlife_char');
+    if(!saved)return;
+    const p=JSON.parse(saved);
+    if(p&&p.name&&p.page>0){
+      const STEP_NAMES_LOCAL=['','IDENTITY','RACE','CLASS','SKILLS','ABILITIES','STORY','SHEET'];
+      const stepName=STEP_NAMES_LOCAL[p.page]||('STEP '+p.page);
+      document.getElementById('resume-toast-msg').textContent=`RESUME: ${p.name.toUpperCase()} — ${stepName}`;
+      document.getElementById('resume-toast').classList.add('show');
+    }
+  }catch(e){}
+}
+function resumeSession(){
+  try{
+    const saved=localStorage.getItem('lowlife_char');
+    if(saved){
+      Object.assign(S,JSON.parse(saved));
+      document.getElementById('resume-toast').classList.remove('show');
+      goTo(S.page||1);
+    }
+  }catch(e){}
+}
+function dismissResume(){document.getElementById('resume-toast').classList.remove('show');}
+
+// ── Audio ──
+let audioCtx=null,audioPlaying=false,masterGain=null,initialized=false;
+function initAudio(){
+  if(initialized)return;initialized=true;
+  audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+  masterGain=audioCtx.createGain();masterGain.gain.value=0;masterGain.connect(audioCtx.destination);
+  const reverb=createReverb();reverb.connect(masterGain);
+  createDrone(55,.42,reverb);createDrone(110,.22,reverb);createDrone(82.4,.16,reverb);createDrone(164.8,.10,reverb);createShimmer(reverb);createRumble();
+  fadeIn();audioPlaying=true;document.getElementById('music-btn').textContent='♪ MUTE';
+}
+function createReverb(){const conv=audioCtx.createConvolver();const rate=audioCtx.sampleRate,len=rate*5;const buf=audioCtx.createBuffer(2,len,rate);for(let c=0;c<2;c++){const d=buf.getChannelData(c);for(let i=0;i<len;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/len,1.8)}conv.buffer=buf;return conv;}
+function createDrone(freq,vol,reverb){const osc=audioCtx.createOscillator(),g=audioCtx.createGain();const lfo=audioCtx.createOscillator(),lg=audioCtx.createGain();osc.type='sine';osc.frequency.value=freq;lfo.type='sine';lfo.frequency.value=.03+Math.random()*.04;lg.gain.value=freq*.008;lfo.connect(lg);lg.connect(osc.frequency);g.gain.value=vol;osc.connect(g);g.connect(reverb);osc.start();lfo.start();}
+function createShimmer(reverb){const osc=audioCtx.createOscillator(),f=audioCtx.createBiquadFilter(),g=audioCtx.createGain();osc.type='sawtooth';osc.frequency.value=440;f.type='lowpass';f.frequency.value=800;g.gain.value=.022;osc.connect(f);f.connect(g);g.connect(reverb);const lfo=audioCtx.createOscillator(),lg=audioCtx.createGain();lfo.frequency.value=.015;lg.gain.value=.004;lfo.connect(lg);lg.connect(g.gain);osc.start();lfo.start();}
+function createRumble(){const len=audioCtx.sampleRate*3,buf=audioCtx.createBuffer(1,len,audioCtx.sampleRate);const d=buf.getChannelData(0);for(let i=0;i<len;i++)d[i]=Math.random()*2-1;const src=audioCtx.createBufferSource();src.buffer=buf;src.loop=true;const f=audioCtx.createBiquadFilter();f.type='lowpass';f.frequency.value=70;const g=audioCtx.createGain();g.gain.value=.16;src.connect(f);f.connect(g);g.connect(masterGain);src.start();}
+function fadeIn(){const t=audioCtx.currentTime;masterGain.gain.linearRampToValueAtTime(.72,t+4)}
+function toggleMusic(){
+  if(!initialized){initAudio();return}
+  if(audioPlaying){masterGain.gain.linearRampToValueAtTime(0,audioCtx.currentTime+1);audioPlaying=false;document.getElementById('music-btn').textContent='♪ MUSIC ON';}
+  else{audioCtx.resume();masterGain.gain.linearRampToValueAtTime(.72,audioCtx.currentTime+1);audioPlaying=true;document.getElementById('music-btn').textContent='♪ MUTE';}
+}
+function sealScroll(){
+  setTimeout(()=>{
+    const wrap=document.getElementById('scroll-wrap');
+    if(wrap)wrap.classList.add('sealed');
+  },350);
+}
+function triggerCrescendo(){
+  if(!audioCtx)return;
+  const t=audioCtx.currentTime;
+  // swell master volume
+  masterGain.gain.cancelScheduledValues(t);
+  masterGain.gain.setValueAtTime(masterGain.gain.value,t);
+  masterGain.gain.linearRampToValueAtTime(1.1,t+2.5);
+  masterGain.gain.linearRampToValueAtTime(0.85,t+5);
+  // distorted bass slam
+  for(let i=0;i<3;i++){
+    const o=audioCtx.createOscillator(),dist=audioCtx.createWaveShaper(),g=audioCtx.createGain();
+    const curve=new Float32Array(512);for(let j=0;j<512;j++){const x=j*2/512-1;curve[j]=x<0?-Math.pow(Math.abs(x),0.4):Math.pow(x,0.4);}
+    dist.curve=curve;
+    o.type='sawtooth';o.frequency.value=[40,55,30][i];
+    g.gain.setValueAtTime(0,t+i*0.18);
+    g.gain.linearRampToValueAtTime(0.55,t+i*0.18+0.06);
+    g.gain.exponentialRampToValueAtTime(0.001,t+i*0.18+1.4);
+    o.connect(dist);dist.connect(g);g.connect(masterGain);
+    o.start(t+i*0.18);o.stop(t+i*0.18+1.4);
+  }
+  // high screech noise burst
+  const noiseLen=audioCtx.sampleRate*0.3;
+  const noiseBuf=audioCtx.createBuffer(1,noiseLen,audioCtx.sampleRate);
+  const nd=noiseBuf.getChannelData(0);for(let i=0;i<noiseLen;i++)nd[i]=(Math.random()*2-1);
+  const nSrc=audioCtx.createBufferSource();nSrc.buffer=noiseBuf;
+  const nFilter=audioCtx.createBiquadFilter();nFilter.type='bandpass';nFilter.frequency.value=3200;nFilter.Q.value=0.8;
+  const nGain=audioCtx.createGain();nGain.gain.setValueAtTime(0.45,t);nGain.gain.exponentialRampToValueAtTime(0.001,t+0.3);
+  nSrc.connect(nFilter);nFilter.connect(nGain);nGain.connect(masterGain);nSrc.start(t);
+  // deep sustained ominous chord — stacked tritone fifths
+  const chordFreqs=[36.7,55,73.4,110];
+  chordFreqs.forEach((freq,i)=>{
+    const o=audioCtx.createOscillator(),g=audioCtx.createGain(),rev=createReverb();
+    o.type=i%2===0?'sine':'triangle';
+    o.frequency.setValueAtTime(freq,t+0.4);
+    o.frequency.linearRampToValueAtTime(freq*0.985,t+6);
+    g.gain.setValueAtTime(0,t+0.4);
+    g.gain.linearRampToValueAtTime(0.32-(i*0.05),t+1.2);
+    g.gain.linearRampToValueAtTime(0.22-(i*0.04),t+6);
+    o.connect(g);g.connect(rev);rev.connect(masterGain);
+    o.start(t+0.4);o.stop(t+7);
+  });
+  // screen flash effect
+  const flash=document.createElement('div');
+  Object.assign(flash.style,{position:'fixed',inset:'0',background:'rgba(196,28,28,0.18)',zIndex:'9999',pointerEvents:'none',transition:'opacity 0.6s ease'});
+  document.body.appendChild(flash);
+  setTimeout(()=>{flash.style.opacity='0';setTimeout(()=>flash.remove(),700);},120);
+}
+function playSFX(type){
+  if(!audioCtx)return;const t=audioCtx.currentTime;
+  if(type==='hover'){const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.type='sine';o.frequency.value=320;g.gain.setValueAtTime(.18,t);g.gain.exponentialRampToValueAtTime(.001,t+.12);o.connect(g);g.connect(audioCtx.destination);o.start(t);o.stop(t+.12);}
+  else if(type==='select'){const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.type='triangle';o.frequency.setValueAtTime(180,t);o.frequency.exponentialRampToValueAtTime(100,t+.35);g.gain.setValueAtTime(.45,t);g.gain.exponentialRampToValueAtTime(.001,t+.35);o.connect(g);g.connect(audioCtx.destination);o.start(t);o.stop(t+.35);}
+  else if(type==='page'){const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.type='sine';o.frequency.value=260;g.gain.setValueAtTime(.28,t);g.gain.exponentialRampToValueAtTime(.001,t+.4);o.connect(g);g.connect(audioCtx.destination);o.start(t);o.stop(t+.4);}
+  else if(type==='forge'){for(let i=0;i<3;i++){const o=audioCtx.createOscillator(),g=audioCtx.createGain();const freqs=[150,120,90];o.type='triangle';o.frequency.value=freqs[i];g.gain.setValueAtTime(0,t+i*.15);g.gain.linearRampToValueAtTime(.42,t+i*.15+.05);g.gain.exponentialRampToValueAtTime(.001,t+i*.15+.5);o.connect(g);g.connect(audioCtx.destination);o.start(t+i*.15);o.stop(t+i*.15+.5);}}
+  else if(type==='type'){const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.type='triangle';o.frequency.value=120+Math.random()*40;g.gain.setValueAtTime(.08,t);g.gain.exponentialRampToValueAtTime(.001,t+.06);o.connect(g);g.connect(audioCtx.destination);o.start(t);o.stop(t+.06);}
+  else if(type==='type-violent'){const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.type='sawtooth';o.frequency.value=40+Math.random()*20;g.gain.setValueAtTime(.28,t);g.gain.exponentialRampToValueAtTime(.001,t+.1);o.connect(g);g.connect(masterGain);o.start(t);o.stop(t+.1);}
+}
+
+// ── Intro ──
+let introRunning=false,introComplete=false,typeTimeout=null;
+function runIntro(){
+  if(introRunning)return;
+  const startBtn=document.getElementById('start-click-overlay');
+  startBtn.classList.add('moved-up');startBtn.style.cursor='default';startBtn.onclick=null;
+  document.getElementById('click-to-begin').style.opacity='0';
+  if(!initialized)initAudio();
+  const block=document.getElementById('intro-lore-block');
+  block.innerHTML='';introRunning=true;block.classList.add('visible');
+  document.getElementById('intro-skip').style.display='block';
+  let lineIndex=0;
+  // kick off scroll unfurl
+  setTimeout(()=>{
+    const top=document.getElementById('scroll-edge-top');
+    if(top)top.style.transform='scaleX(1)';
+  },400);
+  // continuously grow side borders as content expands
+  const scrollSideTimer=setInterval(()=>{
+    const bl=document.getElementById('intro-lore-block');
+    const lft=document.getElementById('scroll-edge-left');
+    const rgt=document.getElementById('scroll-edge-right');
+    if(bl&&lft&&rgt){
+      const h=bl.getBoundingClientRect().height;
+      if(h>0){lft.style.height=h+'px';rgt.style.height=h+'px';}
+    }
+  },80);
+  // store timer so we can clear on skip/restart
+  window._scrollSideTimer=scrollSideTimer;
+  function typeNextLine(){
+    if(lineIndex>=INTRO_LINES.length){finishIntro();return}
+    const ln=INTRO_LINES[lineIndex];
+    const el=document.createElement('div');el.className='intro-line visible '+(ln.cls||'');block.appendChild(el);
+
+    if(ln.cls==='blank'){lineIndex++;typeTimeout=setTimeout(typeNextLine,200);return;}
+    let charIndex=0;
+    function typeChar(){
+      if(charIndex<ln.text.length){
+        const char=ln.text.charAt(charIndex);
+        if(ln.cls==='red-line'&&char!==' '){const span=document.createElement('span');span.textContent=char;span.className='shaking-letter';span.style.animationDelay=`-${Math.random()*.08}s`;el.appendChild(span);}
+        else{el.appendChild(document.createTextNode(char));}
+        if(ln.cls==='red-line'){el.setAttribute('data-text',el.textContent);el.querySelectorAll('.shaking-letter').forEach(s=>{s.style.animation='none';s.style.transform='none';});el.classList.add('glitch-active');sealScroll();}
+        if(char!==' '){if(ln.cls==='red-line')playSFX('type-violent');else playSFX('type');}
+        charIndex++;typeTimeout=setTimeout(typeChar,ln.cls==='red-line'?110+Math.random()*90:18+Math.random()*18);
+      }else{
+        if(ln.cls==='red-line'){el.setAttribute('data-text',el.textContent);el.querySelectorAll('.shaking-letter').forEach(s=>{s.style.animation='none';s.style.transform='none';});el.classList.add('glitch-active');sealScroll();}
+        lineIndex++;const delay=ln.cls==='heavy'?700:ln.cls==='red-line'?1000:400;
+        if(ln.cls==='red-line')triggerCrescendo();
+        if(ln.pause)showContinuePrompt(typeNextLine);
+        else typeTimeout=setTimeout(typeNextLine,delay);
+      }
+    }
+    typeChar();
+  }
+  setTimeout(typeNextLine,600);
+}
+function showContinuePrompt(cb){
+  const block=document.getElementById('intro-lore-block');
+  const prompt=document.createElement('div');prompt.id='intro-continue-prompt';
+  Object.assign(prompt.style,{fontFamily:'var(--px)',fontSize:'.32rem',color:'var(--g3)',textAlign:'center',marginTop:'2.5rem',marginBottom:'1.5rem',letterSpacing:'.15em',animation:'blink 1.5s infinite',cursor:'pointer'});
+  prompt.textContent='▶ CLICK ANYWHERE TO CONTINUE...';
+  block.appendChild(prompt);prompt.scrollIntoView({behavior:'smooth',block:'nearest'});
+  const ca=(e)=>{
+    if(e.target.id==='intro-skip'||!introRunning)return;
+    document.removeEventListener('click',ca);const p=document.getElementById('intro-continue-prompt');if(p)p.remove();
+    playSFX('select');typeTimeout=setTimeout(cb,100);
+  };
+  setTimeout(()=>{if(introRunning)document.addEventListener('click',ca);},50);
+}
+function finishIntro(){
+  introComplete=true;introRunning=false;
+  document.getElementById('intro-skip').style.display='none';
+  document.querySelectorAll('.intro-line').forEach(el=>el.classList.add('visible'));
+  const lines=document.querySelectorAll('.intro-line');
+  if(lines.length){const c=document.createElement('span');c.className='blinking-cursor';lines[lines.length-1].appendChild(c);}
+  setTimeout(()=>{
+    const wrap=document.getElementById('intro-btn-wrap');
+    const popup=document.getElementById('creation-popup');
+    const box=document.getElementById('popup-scanline');
+    const btn=document.getElementById('begin-btn');
+    const hdr=document.getElementById('popup-header');
+    wrap.classList.add('visible');
+    // punch in
+    popup.style.transition='none';
+    popup.style.transform='scale(0.5) translateY(40px)';
+    popup.style.opacity='0';
+    requestAnimationFrame(()=>{
+      requestAnimationFrame(()=>{
+        popup.style.transition='transform 0.55s cubic-bezier(0.22,1.4,0.36,1), opacity 0.18s ease';
+        popup.style.transform='scale(1) translateY(0)';
+        popup.style.opacity='1';
+      });
+    });
+    // sfx — rapid 8bit punch sequence
+    if(audioCtx){
+      const t=audioCtx.currentTime;
+      // impact crack
+      [[80,.55,0],[120,.45,0.04],[200,.32,0.09],[400,.18,0.14]].forEach(([freq,vol,delay])=>{
+        const o=audioCtx.createOscillator(),g=audioCtx.createGain();
+        o.type='square';o.frequency.value=freq;
+        g.gain.setValueAtTime(0,t+delay);
+        g.gain.linearRampToValueAtTime(vol,t+delay+0.01);
+        g.gain.exponentialRampToValueAtTime(0.001,t+delay+0.18);
+        o.connect(g);g.connect(audioCtx.destination);
+        o.start(t+delay);o.stop(t+delay+0.2);
+      });
+      // ascending 8bit arp after the punch
+      [523,659,784,1047,1319].forEach((freq,i)=>{
+        const o=audioCtx.createOscillator(),g=audioCtx.createGain();
+        o.type='square';o.frequency.value=freq;
+        const d=0.22+i*0.07;
+        g.gain.setValueAtTime(0,t+d);
+        g.gain.linearRampToValueAtTime(0.28,t+d+0.01);
+        g.gain.exponentialRampToValueAtTime(0.001,t+d+0.12);
+        o.connect(g);g.connect(audioCtx.destination);
+        o.start(t+d);o.stop(t+d+0.14);
+      });
+      // final high chime
+      const o2=audioCtx.createOscillator(),g2=audioCtx.createGain();
+      o2.type='square';o2.frequency.value=2093;
+      g2.gain.setValueAtTime(0,t+0.62);
+      g2.gain.linearRampToValueAtTime(0.20,t+0.63);
+      g2.gain.exponentialRampToValueAtTime(0.001,t+0.9);
+      o2.connect(g2);g2.connect(audioCtx.destination);
+      o2.start(t+0.62);o2.stop(t+1);
+    }
+    // border flare + button pulse + header flicker after landing
+    setTimeout(()=>{
+      if(box)box.style.animation='borderFlare 2.2s ease-in-out infinite';
+      if(btn)btn.style.animation='btnPulse 1.8s ease-in-out infinite';
+      if(hdr)hdr.style.animation='headerFlicker 4s step-end infinite';
+    },580);
+    checkResume();
+  },900);
+}
+function skipIntro(){
+  clearTimeout(typeTimeout);introRunning=false;
+  if(window._scrollSideTimer)clearInterval(window._scrollSideTimer);
+  const wrap=document.getElementById('scroll-wrap');if(wrap)wrap.classList.remove('sealed');
+  const stopEl=document.getElementById('scroll-edge-top');if(stopEl){stopEl.style.transition='none';stopEl.style.transform='scaleX(0)';}
+  const sleft=document.getElementById('scroll-edge-left');if(sleft){sleft.style.transition='none';sleft.style.height='0';}
+  const sright=document.getElementById('scroll-edge-right');if(sright){sright.style.transition='none';sright.style.height='0';}
+  const block=document.getElementById('intro-lore-block');
+  block.innerHTML='';
+  INTRO_LINES.forEach(ln=>{
+    const el=document.createElement('div');el.className='intro-line visible '+(ln.cls||'');
+    if(ln.cls==='red-line'){el.textContent=ln.text;el.setAttribute('data-text',ln.text);}
+    else{el.textContent=ln.text;}
+    block.appendChild(el);
+  });
+  if(!initialized)initAudio();
+  triggerCrescendo();
+  finishIntro();
+}
+function beginCreation(){initAudio();playSFX('forge');goTo(1);}
+function replayIntro(){
+  playSFX('page');
+  // hide all pages, show intro
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelector('[data-page="0"]').classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+  // reset intro state
+  introComplete=false;introRunning=false;clearTimeout(typeTimeout);
+  const startBtn=document.getElementById('start-click-overlay');
+  startBtn.classList.remove('moved-up');startBtn.style.cursor='pointer';startBtn.onclick=runIntro;
+  document.getElementById('click-to-begin').style.opacity='1';
+  const block=document.getElementById('intro-lore-block');
+  block.classList.remove('visible');block.innerHTML='';
+  document.getElementById('intro-btn-wrap').classList.remove('visible');
+  const pp=document.getElementById('creation-popup');
+  if(pp){pp.style.transition='none';pp.style.transform='scale(0.5) translateY(40px)';pp.style.opacity='0';}
+  const pb=document.getElementById('popup-scanline');if(pb)pb.style.animation='none';
+  const pbb=document.getElementById('begin-btn');if(pbb)pbb.style.animation='none';
+  const phdr=document.getElementById('popup-header');if(phdr)phdr.style.animation='none';
+  document.getElementById('replay-intro-btn').style.display='none';
+}
+
+// ── Nav ──
+const STEP_NAMES=['IDENTITY','RACE','CLASS','SKILLS','ABILITIES','STORY','SHEET'];
+function renderNav(){
+  document.getElementById('nav-steps').innerHTML=STEP_NAMES.map((n,i)=>{
+    const pg=i+1;const cls=pg<S.page?'done':pg===S.page?'active':'';
+    return`<div class="nav-step ${cls}">${pg<S.page?'✓ ':''}${n}</div>`;
+  }).join('');
+}
+
+// ── Page Navigation ──
+function goTo(pg){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelector(`[data-page="${pg}"]`).classList.add('active');
+  S.page=pg;renderNav();
+  const rBtn=document.getElementById('replay-intro-btn');
+  if(rBtn)rBtn.style.display=pg>0?'block':'none';
+  window.scrollTo({top:0,behavior:'smooth'});
+  playSFX('page');
+  if(pg===1)renderPage1();
+  if(pg===2)renderRacePage();
+  if(pg===3)renderClassPage();
+  if(pg===4)renderSkillsPage();
+  if(pg===5)renderAbilitiesPage();
+  if(pg===6)renderPage6();
+  if(pg===7){playSFX('forge');renderFinalSheet();}
+  saveProgress();
+}
+
+// ── Step Functions ──
+function step1Next(){
+  const n=document.getElementById('inp-name').value.trim();
+  if(!n){alert('The archive requires a name.');return}
+  S.name=n;
+  S.age=document.getElementById('inp-age')?.value.trim()||'';
+  S.appearance=document.getElementById('inp-appearance')?.value.trim()||'';
+  S.distinguishing=document.getElementById('inp-mark')?.value.trim()||'';
+  saveProgress();goTo(2);
+}
+function step2Next(){
+  if(!S.race){alert('Choose your bloodline.');return}
+  if(S.race === 'custom') {
+     updateCustomRace();
+     if(!S.customRace.name) { alert('Provide a name for your custom lineage.'); return; }
+  }
+  saveProgress();goTo(3);
+}
+function step3Next(){if(!S.classId){alert('Choose your calling.');return}saveProgress();goTo(4);}
+function step4Next(){
+  const ci=document.getElementById('custom-skill-inp');if(ci)S.customSkill=ci.value.trim();
+  if(!S.customSkill){alert('Define your class custom skill — even one line.');return}
+  if(S.swappedSkill.index !== -1 && (!S.swappedSkill.name || !S.swappedSkill.desc)) {
+    alert('Please complete the details for your replaced custom skill, or revert it.');
+    return;
+  }
+  saveProgress();goTo(5);
+}
+function step5Next(){saveProgress();goTo(6);}
+function step6Next(){
+  S.lore=document.getElementById('lore-inp').value.trim();
+  S.flaw=document.getElementById('inp-flaw')?.value.trim()||'';
+  S.bond=document.getElementById('inp-bond')?.value.trim()||'';
+  saveProgress();goTo(7);
+}
+
+// ── Page 1 Render ──
+function renderPage1(){
+  const fields={name:'inp-name',age:'inp-age',appearance:'inp-appearance',distinguishing:'inp-mark'};
+  Object.entries(fields).forEach(([key,id])=>{const el=document.getElementById(id);if(el)el.value=S[key]||'';});
+}
+
+// ── Race Page ──
+function renderRacePage(){
+  const classId=S.classId;
+  document.getElementById('race-grid').innerHTML=RACES.map(r=>{
+    const combo=classId?RACE_CLASS_LORE[`${r.id}-${classId}`]:'';
+    const rc=RACE_COLORS[r.id]||{hex:'#9c9c9c',rgb:'156,156,156'};
+    const isSelected=S.race===r.id;
+    const selStyle=isSelected?`border-color:${rc.hex};border-left:3px solid ${rc.hex};background:rgba(${rc.rgb},0.06);`:'';
+    return`<div class="choice-card ${isSelected?'selected':''}" style="${selStyle}" onclick="selectRace('${r.id}')">
+      <span class="cc-icon">${r.icon}</span>
+      <div class="cc-name" ${isSelected?`style="color:${rc.hex};text-shadow:0 0 18px ${rc.hex}80"`:''}>${r.name}</div>
+      <div class="cc-desc">${r.desc}</div>
+      <div class="cc-tag">${r.tag}</div>
+      ${isSelected?`<div style="display:flex;align-items:center;gap:.3rem;margin-top:.4rem"><div style="width:6px;height:6px;background:${rc.hex};box-shadow:0 0 6px ${rc.hex}"></div><span style="font-family:var(--px);font-size:.2rem;color:${rc.hex};letter-spacing:.08em">BLOODLINE COLOR ASSIGNED</span></div>`:''}
+      ${combo?`<div style="margin-top:.4rem;padding:.3rem .5rem;border-left:2px solid var(--red2);background:rgba(196,28,28,0.05);font-family:var(--vt);font-size:.88rem;color:var(--g3);line-height:1.6;font-style:italic">${combo}</div>`:''}
+      <div class="cc-items">${r.items.map(it=>`<div class="cc-item"><span>${it.icon}</span><span>${it.name}</span></div>`).join('')}</div>
+    </div>`;
+  }).join('');
+
+  const crp = document.getElementById('custom-race-panel');
+  if (S.race === 'custom') {
+    crp.style.display = 'block';
+    document.getElementById('inp-cr-name').value = S.customRace.name || '';
+    document.getElementById('inp-cr-stat').value = S.customRace.stat || 'str';
+    document.getElementById('inp-cr-desc').value = S.customRace.desc || '';
+  } else {
+    crp.style.display = 'none';
+  }
+
+  renderRacePreview();
+}
+window.selectRace=id=>{playSFX('select');S.race=id;renderRacePage();saveProgress();};
+window.updateCustomRace = () => {
+    S.customRace.name = document.getElementById('inp-cr-name').value.trim();
+    S.customRace.stat = document.getElementById('inp-cr-stat').value;
+    S.customRace.desc = document.getElementById('inp-cr-desc').value.trim();
+    renderRacePreview();
+};
+function renderRacePreview(){
+  const race=RACES.find(r=>r.id===S.race);const el=document.getElementById('race-inv-preview');
+  if(!race){el.innerHTML='';return;}
+  const rName = S.race === 'custom' ? (S.customRace.name || race.name) : race.name;
+  el.innerHTML=`<div class="sys-panel"><div class="panel-title">Starting Items — ${rName}</div>${race.items.map(it=>`<div class="inv-item"><div class="inv-icon">${it.icon}</div><div><div class="inv-name">${it.name}</div><div class="inv-desc">${it.desc}</div><div class="inv-src">[ ${it.src} ]</div></div></div>`).join('')}</div>`;
+  document.getElementById('race-hint').textContent=rName+' selected.';
+}
+
+// ── Class Page ──
+const DIFF_LABEL={beg:'BEGINNER',int:'INTERMEDIATE',adv:'ADVANCED'};
+const DIFF_CLS={beg:'diff-beg',int:'diff-int',adv:'diff-adv'};
+function renderClassPage(){
+  const martials=CLASSES.filter(c=>c.group==='martial');
+  const spells=CLASSES.filter(c=>c.group==='spell');
+  function cardHTML(cl){
+    const cc=CLASS_COLORS[cl.id]||{hex:'#9c9c9c',rgb:'156,156,156'};
+    const isSelected=S.classId===cl.id;
+    const selStyle=isSelected?`border-color:${cc.hex};border-left:3px solid ${cc.hex};background:rgba(${cc.rgb},0.06);`:'';
+    return`<div class="choice-card ${isSelected?'selected':''}" style="${selStyle}" onclick="openClassModal('${cl.id}')" onmouseenter="playSFX('hover')">
+      <span class="cc-icon">${cl.icon}</span>
+      <div class="cc-name" ${isSelected?`style="color:${cc.hex};text-shadow:0 0 18px ${cc.hex}80"`:''}>${cl.name}</div>
+      <div class="cc-desc" style="font-size:.85rem">${cl.desc}</div>
+      <div class="cc-tag" style="margin-top:.3rem">${cl.tag}</div>
+      <div class="cc-diff ${DIFF_CLS[cl.difficulty]}" style="margin-top:.35rem">${DIFF_LABEL[cl.difficulty]}</div>
+      ${isSelected?`<div style="display:flex;align-items:center;gap:.3rem;margin-top:.35rem"><div style="width:6px;height:6px;background:${cc.hex};box-shadow:0 0 6px ${cc.hex}"></div><span style="font-family:var(--px);font-size:.2rem;color:${cc.hex};letter-spacing:.06em">CLASS COLOR ASSIGNED · CLICK TO REVIEW</span></div>`:'<div style="font-family:var(--px);font-size:.22rem;color:var(--g2);margin-top:.35rem;letter-spacing:.06em">CLICK FOR FULL PROFILE ▶</div>'}
+    </div>`;
+  }
+  document.getElementById('class-grid-martial').innerHTML=martials.map(cardHTML).join('');
+  document.getElementById('class-grid-spell').innerHTML=spells.map(cardHTML).join('');
+  const el=document.getElementById('class-inv-preview');
+  if(S.classId){
+    const cls=CLASSES.find(c=>c.id===S.classId);
+    document.getElementById('class-hint').textContent=cls.name+' selected.';
+    el.innerHTML=`<div class="sys-panel"><div class="panel-title">Starting Items — ${cls.name}</div>${cls.items.map(it=>`<div class="inv-item"><div class="inv-icon">${it.icon}</div><div><div class="inv-name">${it.name}</div><div class="inv-desc">${it.desc}</div><div class="inv-src">[ ${it.src} ]</div></div></div>`).join('')}</div>`;
+  }else{el.innerHTML='';document.getElementById('class-hint').textContent='Select a class.';}
+}
+window.openClassModal=function(id){
+  const cl=CLASSES.find(c=>c.id===id);if(!cl)return;playSFX('hover');
+  const tierLabel={op:'⚡ OVERPOWERED',mid:'◈ SITUATIONAL',mun:'◇ MUNDANE',custom:'★ CUSTOM'};
+  const tierCol={op:'var(--red)',mid:'var(--g4)',mun:'var(--g2)',custom:'var(--white)'};
+  document.getElementById('cm-icon').textContent=cl.icon;document.getElementById('cm-name').textContent=cl.name;
+  document.getElementById('cm-tag').textContent=cl.tag;document.getElementById('cm-diff').textContent=DIFF_LABEL[cl.difficulty];
+  document.getElementById('cm-diff').className='cc-diff '+DIFF_CLS[cl.difficulty];
+  document.getElementById('cm-lore').textContent=cl.lowlife;document.getElementById('cm-scenario').textContent=cl.scenario;
+  document.getElementById('cm-abilities').innerHTML=cl.skills.map(sk=>`
+    <div style="display:flex;gap:.6rem;align-items:flex-start;margin-bottom:.55rem">
+      <div style="width:3px;flex-shrink:0;align-self:stretch;background:${tierCol[sk.tier]};margin-top:2px;box-shadow:0 0 5px ${tierCol[sk.tier]};"></div>
+      <div>
+        <div style="font-family:var(--px);font-size:.26rem;color:${tierCol[sk.tier]};letter-spacing:.08em;margin-bottom:.12rem;text-shadow:0 0 5px ${tierCol[sk.tier]}">${tierLabel[sk.tier]}</div>
+        <div style="font-family:var(--px);font-size:.38rem;color:var(--g5);margin-bottom:.1rem">${sk.name}</div>
+        <div style="font-family:var(--vt);font-size:.9rem;color:var(--g3);line-height:1.65">${sk.desc}</div>
+      </div>
+    </div>`).join('');
+  const selBtn=document.getElementById('cm-select-btn');
+  selBtn.textContent=S.classId===id?'✓ SELECTED — CLICK TO DESELECT':'⚔ SELECT THIS CLASS';
+  selBtn.onclick=()=>{if(S.classId===id){S.classId=null;}else{S.classId=id;playSFX('select');}closeClassModal();renderClassPage();saveProgress();};
+  document.getElementById('class-modal-backdrop').classList.add('show');
+};
+window.closeClassModal=function(){document.getElementById('class-modal-backdrop').classList.remove('show');};
+
+// ── Skills Page ──
+function renderSkillsPage(){
+  const cls=CLASSES.find(c=>c.id===S.classId);
+  if(!cls){document.getElementById('skills-list').innerHTML='<div class="warn-box">Select a class first.</div>';return;}
+  const tierLabel={op:'⚡ OVERPOWERED',mid:'◈ SITUATIONAL',mun:'◇ MUNDANE',custom:'★ MANDATORY CUSTOM'};
+
+  document.getElementById('skills-list').innerHTML=cls.skills.map((sk, i) => {
+    if(sk.tier==='custom'){
+       return `<div class="skill-card tier-custom">
+        <div class="sc-tier tier-custom">${tierLabel[sk.tier]}</div>
+        <div class="sc-name">${sk.name}</div><div class="sc-desc">${sk.desc}</div>
+        <div class="sc-note">Your GM will build encounters around whatever you define here. Be specific.</div>
+        <div style="margin-top:.65rem"><label class="input-label">YOUR CUSTOM SKILL — NAME &amp; DESCRIPTION</label>
+        <input type="text" id="custom-skill-inp" value="${S.customSkill}" placeholder="e.g. 'The Disappearing Act' — vanish into a crowd once per session when not in direct combat…"></div>
+      </div>`;
+    }
+
+    const isSwapped = S.swappedSkill.index === i;
+    
+    if (isSwapped) {
+      return `<div class="skill-card tier-custom" style="border-color:var(--white);">
+         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:.3rem">
+           <div class="sc-tier tier-custom" style="margin-bottom:0">★ REPLACEMENT SKILL (SACRIFICED: ${sk.name.toUpperCase()})</div>
+           <button class="btn btn-light" style="padding:.3rem .5rem; font-size:.24rem;" onclick="swapSkill(-1)">↺ REVERT TO ORIGINAL</button>
+         </div>
+         <div class="sc-note">You have permanently sacrificed <strong>${sk.name}</strong> to forge this unique ability.</div>
+         <div style="margin-top:.5rem">
+           <label class="input-label">SKILL NAME</label>
+           <input type="text" id="swapped-skill-name" value="${S.swappedSkill.name}" onchange="S.swappedSkill.name=this.value" placeholder="e.g. 'Unseen Strike'">
+           <label class="input-label" style="margin-top:.3rem">SKILL DESCRIPTION</label>
+           <input type="text" id="swapped-skill-desc" value="${S.swappedSkill.desc}" onchange="S.swappedSkill.desc=this.value" placeholder="e.g. Deal 1d8 extra damage against targets who haven't noticed you...">
+         </div>
+      </div>`;
+    }
+
+    return `<div class="skill-card tier-${sk.tier}">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:.2rem">
+         <div class="sc-tier tier-${sk.tier}" style="margin-bottom:0">${tierLabel[sk.tier]}</div>
+         ${S.swappedSkill.index === -1 ? `<button class="btn" style="padding:.25rem .5rem; font-size:.22rem;" onclick="swapSkill(${i})">⇄ REPLACE WITH CUSTOM</button>` : ''}
+      </div>
+      <div class="sc-name">${sk.name}</div><div class="sc-desc">${sk.desc}</div>
+    </div>`;
+  }).join('');
+}
+window.swapSkill = (idx) => {
+   S.swappedSkill.index = idx;
+   if (idx !== -1) {
+      S.swappedSkill.name = ''; S.swappedSkill.desc = '';
+   }
+   playSFX('select');
+   renderSkillsPage();
+}
+
+// ── Abilities Page ──
+function renderAbilitiesPage(){
+  renderStatRows();renderTrainedSkills();
+  const tip=CLASS_STAT_TIPS[S.classId];const tipEl=document.getElementById('class-stat-tip');
+  if(tipEl&&tip){tipEl.textContent='▸ '+tip;tipEl.style.display='block';}
+  // render preset loadout buttons
+  const pw=document.getElementById('preset-wrap');
+  const pb=document.getElementById('preset-btns');
+  const presets=CLASS_PRESETS[S.classId];
+  if(pw&&pb&&presets){
+    pw.style.display='block';
+    pb.innerHTML=presets.map((p,i)=>`<button class="btn" style="font-size:.28rem;padding:.3rem .65rem;letter-spacing:.06em;" onclick="applyPreset(${i})">${p.name}</button>`).join('');
+  } else if(pw){pw.style.display='none';}
+}
+window.applyPreset=function(idx){
+  const presets=CLASS_PRESETS[S.classId];if(!presets)return;
+  const p=presets[idx];
+  S.stats={...p.stats};
+  renderStatRows();
+  const desc=document.getElementById('preset-desc');
+  if(desc){desc.textContent=p.name+' — '+p.desc;desc.style.display='block';}
+  playSFX('select');
+};
+function renderStatRows(){
+  const rem=27-calcUsed();
+  document.getElementById('pts-left').textContent=rem;
+  document.getElementById('pts-left').style.color=rem<0?'var(--red)':rem===0?'#5a8a5a':'var(--white)';
+  const primaryStats={barbarian:['str','con'],fighter:['str','dex','con'],monk:['dex','wis'],paladin:['str','cha'],ranger:['dex','wis'],rogue:['dex'],wizard:['int','con'],sorcerer:['cha','con'],warlock:['cha','con'],cleric:['wis','con'],druid:['wis','con'],bard:['cha','dex']};
+  const cls=CLASSES.find(c=>c.id===S.classId);
+  document.getElementById('stat-rows').innerHTML=Object.keys(STAT_INFO).map(k=>{
+    const v=S.stats[k],rb=getBonus(k),total=v+rb;
+    const isPrimary=cls&&(primaryStats[cls.id]||[]).includes(k);
+    return`<div class="stat-row" style="${isPrimary?'border-left:2px solid var(--g2);padding-left:.4rem;margin-left:-.4rem':''}">
+      <div class="stat-name" title="${STAT_INFO[k].desc}" style="color:${isPrimary?'var(--g5)':'var(--g3)'}">${STAT_INFO[k].label}${isPrimary?' ★':''}</div>
+      <div class="stat-slider-wrap"><input type="range" class="stat-slider" id="sl-${k}" min="8" max="15" step="1" value="${v}" oninput="sliderMove('${k}',this.value)"></div>
+      <div class="stat-val" id="sv-${k}">${total}</div>
+      <div class="stat-mod" style="color:${mod(total)>=0?'#5a8a5a':'var(--red)'}" id="sm-${k}">${modStr(total)}</div>
+      ${rb?`<div class="race-bonus">+${rb} RACE</div>`:'<div class="race-bonus"></div>'}
+    </div>`;
+  }).join('');
+}
+window.sliderMove=(k,v)=>{
+  const nv=parseInt(v);const test={...S.stats,[k]:nv};
+  if(Object.values(test).reduce((t,val)=>t+ptCost(val),0)>27){document.getElementById('sl-'+k).value=S.stats[k];return;}
+  S.stats[k]=nv;const total=nv+getBonus(k);
+  const sv=document.getElementById('sv-'+k);if(sv)sv.textContent=total;
+  const sm=document.getElementById('sm-'+k);if(sm){sm.textContent=modStr(total);sm.style.color=mod(total)>=0?'#5a8a5a':'var(--red)';}
+  const pr=document.getElementById('pts-left');if(pr){const r=27-calcUsed();pr.textContent=r;pr.style.color=r<0?'var(--red)':r===0?'#5a8a5a':'var(--white)';}
+  playSFX('hover');
+};
+function renderTrainedSkills(){
+  document.getElementById('ts-count').textContent=`${S.trainedSkills.length} / 3 selected`;
+  document.getElementById('trained-skills-grid').innerHTML=ALL_TRAINED.map(s=>{
+    const sel=S.trainedSkills.includes(s),locked=!sel&&S.trainedSkills.length>=3;
+    return`<div class="ts-chip ${sel?'selected':''} ${locked?'locked':''}" onclick="toggleSkill('${s}')">${s.toUpperCase()}</div>`;
+  }).join('');
+}
+window.toggleSkill=s=>{
+  if(S.trainedSkills.includes(s))S.trainedSkills=S.trainedSkills.filter(x=>x!==s);
+  else if(S.trainedSkills.length<3){S.trainedSkills.push(s);playSFX('select');}
+  renderTrainedSkills();
+};
+
+// ── Page 6 Render ──
+function renderPage6(){
+  renderAlignmentGrid();
+  renderTraitChips();
+  
+  if (S.luck) {
+    document.getElementById('luck-display').textContent = S.luck;
+    document.getElementById('roll-luck-btn').style.display = 'none';
+  }
+
+  const kEl = document.getElementById('karma-display');
+  if(kEl) {
+     kEl.textContent = S.karma;
+     if(S.karma === 'POSITIVE') kEl.style.color = '#5a8a5a';
+     else if(S.karma === 'NEGATIVE') kEl.style.color = 'var(--red)';
+     else kEl.style.color = 'var(--g4)';
+  }
+
+  const flawEl=document.getElementById('inp-flaw');const bondEl=document.getElementById('inp-bond');const loreEl=document.getElementById('lore-inp');
+  if(flawEl)flawEl.value=S.flaw||'';if(bondEl)bondEl.value=S.bond||'';if(loreEl)loreEl.value=S.lore||'';
+}
+function renderAlignmentGrid(){
+  const el=document.getElementById('alignment-grid');if(!el)return;
+  el.innerHTML=ALIGNMENTS.map(a=>`
+    <div class="align-card ${S.alignment===a.id?'selected':''}" onclick="selectAlignment('${a.id}')">
+      <div style="font-size:1.1rem;margin-bottom:.2rem">${a.icon}</div>
+      <div class="align-law">${a.law}</div>
+      <div class="align-eth" style="color:${S.alignment===a.id?'var(--white)':'var(--g4)'}">${a.eth}</div>
+      <div class="align-desc">${a.desc}</div>
+    </div>`).join('');
+}
+window.selectAlignment=id=>{
+   playSFX('select');
+   S.alignment=(S.alignment===id?null:id);
+   
+   if (!S.alignment) { S.karma = 'NEUTRAL'; }
+   else {
+      if (id.includes('good')) S.karma = 'POSITIVE';
+      else if (id.includes('evil')) S.karma = 'NEGATIVE';
+      else S.karma = 'NEUTRAL';
+   }
+
+   renderAlignmentGrid();
+   
+   const kEl = document.getElementById('karma-display');
+   if(kEl) {
+      kEl.textContent = S.karma;
+      if(S.karma === 'POSITIVE') kEl.style.color = '#5a8a5a';
+      else if(S.karma === 'NEGATIVE') kEl.style.color = 'var(--red)';
+      else kEl.style.color = 'var(--g4)';
+   }
+   saveProgress();
+};
+
+window.rollLuck = () => {
+   if (S.luck) return; 
+   playSFX('select');
+   S.luck = Math.floor(Math.random() * 10) + 1;
+   document.getElementById('luck-display').textContent = S.luck;
+   document.getElementById('roll-luck-btn').style.display = 'none';
+   saveProgress();
+};
+
+function renderTraitChips(){
+  const el=document.getElementById('trait-chips');const countEl=document.getElementById('trait-count');if(!el)return;
+  if(countEl)countEl.textContent=`${S.traits.length} / 2 selected`;
+  el.innerHTML=PERSONALITY_TRAITS.map((t,i)=>{
+    const sel=S.traits.includes(t),locked=!sel&&S.traits.length>=2;
+    return`<div class="ts-chip ${sel?'selected':''} ${locked?'locked':''}" onclick="toggleTrait(${i})">${t}</div>`;
+  }).join('');
+}
+window.toggleTrait=i=>{
+  const t=PERSONALITY_TRAITS[i];
+  if(S.traits.includes(t))S.traits=S.traits.filter(x=>x!==t);
+  else if(S.traits.length<2){S.traits.push(t);playSFX('select');}
+  renderTraitChips();saveProgress();
+};
+
+// ── Final Sheet ──
+const RACE_COLORS={
+  human:    {hex:'#9c9c9c',rgb:'156,156,156'},
+  halfelf:  {hex:'#4caf76',rgb:'76,175,118'},
+  tiefling: {hex:'#c44080',rgb:'196,64,128'},
+  orc:      {hex:'#a06030',rgb:'160,96,48'},
+  gnome:    {hex:'#c8a020',rgb:'200,160,32'},
+  halfling: {hex:'#40b0b0',rgb:'64,176,176'},
+  dwarf:    {hex:'#8c6b5d',rgb:'140,107,93'},
+  elf:      {hex:'#8fa58a',rgb:'143,165,138'},
+  goblin:   {hex:'#a8b040',rgb:'168,176,64'},
+  custom:   {hex:'#666666',rgb:'102,102,102'}
+};
+const CLASS_COLORS={
+  barbarian:{hex:'#e04020',rgb:'224,64,32'},
+  fighter:  {hex:'#8090a0',rgb:'128,144,160'},
+  monk:     {hex:'#60a0c0',rgb:'96,160,192'},
+  paladin:  {hex:'#d4a030',rgb:'212,160,48'},
+  ranger:   {hex:'#608040',rgb:'96,128,64'},
+  rogue:    {hex:'#805090',rgb:'128,80,144'},
+  wizard:   {hex:'#4060c0',rgb:'64,96,192'},
+  sorcerer: {hex:'#c04080',rgb:'192,64,128'},
+  warlock:  {hex:'#6030a0',rgb:'96,48,160'},
+  cleric:   {hex:'#c0a060',rgb:'192,160,96'},
+  druid:    {hex:'#508030',rgb:'80,128,48'},
+  bard:     {hex:'#c07030',rgb:'192,112,48'},
+};
+
+// ── Skill Tooltip Data ──
+const SKILL_TIP_DATA={
+  barbarian:{
+    'Rage':{
+      stat:'str',
+      body:`Rage is a bonus action — it costs nothing but one of your 2 daily uses. Once active for up to 1 minute, every STR-based attack deals +2 bonus damage, and any physical hit against you (slashing, piercing, bludgeoning) only does half damage. You also get Advantage on STR checks — meaning you roll 2 dice and take the higher one.`,
+      rolls:`Rage lasts 10 rounds. 2 uses per long rest.`,
+      modFn:(s)=>{const str=mod(finalStat('str'));return`Your STR modifier is ${str>=0?'+':''}${str}. While raging, melee attacks deal ${str+2>=0?'+':''}${str+2} damage before the weapon die.`}
+    },
+    'Reckless Attack':{
+      stat:'str',
+      body:`When you Reckless Attack, you roll 2 dice for your attack roll and take the higher — that's Advantage. The tradeoff: the next attack against you also has Advantage. High risk, brutal reward. Best used when you need to hit something that keeps dodging.`,
+      rolls:`Attack roll: 2d20, keep highest. Next incoming attack: 2d20 against you.`,
+      modFn:(s)=>{const str=mod(finalStat('str'));const prof=2;return`Your attack bonus is ${str+prof>=0?'+':''}${str+prof} (STR ${str>=0?'+':''}${str} + Proficiency +${prof}). On a hit your Greataxe deals 1d12${str>=0?'+':''}${str} (${1+str}–${12+str} damage).`}
+    },
+    'Danger Sense':{stat:null,body:`Passive. When a trap, explosion, or spell you can see is about to hit you, roll 2 dice for the DEX saving throw and take the higher. No action required — it just happens.`,rolls:`DEX save with Advantage vs visible threats.`,modFn:(s)=>{const dex=mod(finalStat('dex'));return`Your DEX modifier is ${dex>=0?'+':''}${dex}. Saving throw = d20${dex>=0?'+':''}${dex} (higher of 2 rolls).`}},
+    'Unarmored Defense':{stat:'con',body:`When you wear no armour, your AC isn't just 10 — it's 10 plus your DEX modifier plus your CON modifier. The tougher and quicker your Barbarian, the harder they are to hit even without protection.`,rolls:`AC = 10 + DEX mod + CON mod (no armour).`,modFn:(s)=>{const dex=mod(finalStat('dex'));const con=mod(finalStat('con'));return`Your AC unarmoured = ${10+dex+con} (10 + DEX ${dex>=0?'+':''}${dex} + CON ${con>=0?'+':''}${con}).`}}
+  },
+  fighter:{
+    'Action Surge':{stat:null,body:`Once per short or long rest, on your turn you take a completely additional action — on top of your normal one. Two full attacks, or attack and cast, or any combination. It's the single most powerful burst turn in the game for a Fighter.`,rolls:`1 use per rest. Recharges on short or long rest.`,modFn:(s)=>`At Level 1 with proficiency +2, your two attacks both hit at the same bonus. Double the output for one turn.`},
+    'Second Wind':{stat:'con',body:`As a bonus action, roll 1d10 and add your Fighter level — you recover that many HP. Doesn't need a healer, doesn't cost a spell slot. It's your personal emergency kit that refreshes on a short rest.`,rolls:`Heal 1d10+1 HP (2–11). Bonus action. Once per short rest.`,modFn:(s)=>{const roll=`1d10+1`;return`At Level 1: heals ${roll} — that's 2 to 11 HP recovered instantly as a bonus action.`}},
+    'Combat Superiority':{stat:'str',body:`You have 3 Superiority Dice (d8s). Spend one to add a maneuver to an attack: Trip Attack knocks someone prone, Disarming Attack drops their weapon, Menacing Attack frightens them. Each die adds 1d8 to the effect. Recharges on a short rest.`,rolls:`Superiority die: 1d8 (1–8 bonus). 3 dice per short rest.`,modFn:(s)=>{const str=mod(finalStat('str'));return`Trip Attack: hit roll ${str+2>=0?'+':''}${str+2}, target rolls STR save vs your DC (8 + ${str+2} = ${8+str+2}) or falls prone.`}},
+    'Weapon Proficiency (All)':{stat:null,body:`Passive. Every weapon in the game — simple, martial, exotic — you can pick it up and use it with full proficiency. No penalties. No restrictions. If it can be held, you can use it.`,rolls:`No roll needed — always active.`,modFn:(s)=>`Proficiency bonus +2 applies to every weapon attack you make, no matter the weapon type.`}
+  },
+  monk:{
+    'Flurry of Blows':{stat:'dex',body:`After you take your Attack action, spend 1 Ki point as a bonus action to make 2 additional unarmed strikes. That's 3 hits in one turn at Level 1 — without a weapon. Your fists count as martial weapons and use DEX or STR, whichever is higher.`,rolls:`Costs 1 Ki. Bonus action. 2 unarmed strikes.`,modFn:(s)=>{const dex=mod(finalStat('dex'));const str=mod(finalStat('str'));const atk=Math.max(dex,str);return`Unarmed hit bonus: ${atk+2>=0?'+':''}${atk+2}. Each unarmed strike deals 1d4${atk>=0?'+':''}${atk} (${1+atk}–${4+atk} damage).`}},
+    'Stunning Strike':{stat:'dex',body:`When you land a hit, spend 1 Ki. The target must roll a CON saving throw against your Ki save DC (8 + WIS modifier + Proficiency). Fail: they're Stunned until your next turn — can't move, can't act, and every attack against them has Advantage. It's a full turn erasure.`,rolls:`CON save vs DC 8+WIS+Prof. Costs 1 Ki per use.`,modFn:(s)=>{const wis=mod(finalStat('wis'));const dc=8+wis+2;return`Your Stunning Strike DC is ${dc}. Target rolls d20+CON mod — if they roll below ${dc}, they're stunned.`}},
+    'Ki Points':{stat:'wis',body:`Ki is your resource pool — equal to your Monk level. At Level 1 you have 1 Ki point. Spend it on Flurry of Blows, Stunning Strike, Step of the Wind (Dash or Disengage as bonus action), or Patient Defense (Dodge as bonus action). All recharge on a short rest.`,rolls:`1 Ki point at Level 1. Recharges on short rest.`,modFn:(s)=>`Manage Ki carefully in long fights. At Level 1 you have exactly 1 point — choose between offence (Flurry) or control (Stunning Strike).`},
+    'Unarmored Movement':{stat:null,body:`Passive. Your speed is 10ft higher than normal — 40ft total at Level 1. This isn't a sprint you activate, it's just how fast you are. You close distance, disengage, and reposition faster than anyone else at the table.`,rolls:`+10ft speed, always active.`,modFn:(s)=>`Standard speed 30ft + 10ft = 40ft per turn. That's roughly 4 squares on a grid per move action.`}
+  },
+  paladin:{
+    'Divine Smite':{stat:'str',body:`When you land a melee hit, you can spend a spell slot immediately — before or after seeing the damage roll — to add radiant damage. 1st level slot adds 2d8. Each slot level above 1st adds another d8. Against undead or fiends, add 1 more d8 on top of that.`,rolls:`1st slot: +2d8 radiant (2–16). Higher slots: +1d8 per level.`,modFn:(s)=>{const str=mod(finalStat('str'));return`Your Longsword hits for 1d8${str>=0?'+':''}${str} (${1+str}–${8+str}). Add Smite: total becomes 3d8${str>=0?'+':''}${str} (${3+str}–${24+str} damage).`}},
+    'Lay on Hands':{stat:'cha',body:`You have a healing pool of 5 HP per Paladin level — 5 HP at Level 1. Spend it in any amount by touching an ally or yourself as an action. You can also spend 5 HP from the pool to cure one disease or poison instead of healing. It refreshes after a long rest.`,rolls:`Pool: 5 HP total at Level 1. Recharges on long rest.`,modFn:(s)=>`At Level 1: touch an ally and restore up to 5 HP. No roll required — it just works.`},
+    'Aura of Protection':{stat:'cha',body:`Unlocks at Level 6. When active, you and all allies within 10ft add your CHA modifier to every saving throw they make. One of the most powerful passive party buffs in the game — it turns close-range scrums in your favour.`,rolls:`Passive aura, 10ft radius. Active from Level 6.`,modFn:(s)=>{const cha=mod(finalStat('cha'));return`Your CHA modifier is ${cha>=0?'+':''}${cha}. When active, every saving throw for you and nearby allies improves by ${cha>=0?'+':''}${cha}.`}},
+    'Divine Health':{stat:null,body:`Passive. Immune to disease — permanently, always. Lythern's plague wards, infected wounds, and poisoned water supplies do nothing to you. You walk through contagion untouched. At higher levels, your Aura of Devotion extends this to allies nearby.`,rolls:`Always active. No roll required.`,modFn:(s)=>`No stat dependency. Disease simply does not affect you.`}
+  },
+  ranger:{
+    "Hunter's Mark":{stat:'dex',body:`As a bonus action, mark one creature you can see. Every attack you land against that target deals an extra 1d6 damage. You always sense their general location within 60ft even if they hide. If they die, you can move the mark to a new target as a bonus action on the same turn.`,rolls:`Bonus action to apply. +1d6 damage per hit (1–6 extra).`,modFn:(s)=>{const dex=mod(finalStat('dex'));return`Your Shortbow attacks hit at ${dex+2>=0?'+':''}${dex+2}. With Hunter's Mark: 1d6${dex>=0?'+':''}${dex} + 1d6 bonus = ${2+dex}–${12+dex} total per hit.`}},
+    'Favored Enemy':{stat:'wis',body:`Choose a creature type: Humanoids, Beasts, Undead, etc. You have Advantage on all checks to track, recall lore about, or interact with that type. In Lythern where your enemies are mostly humanoid criminals and government agents — this is almost always relevant.`,rolls:`Advantage on relevant checks vs chosen type.`,modFn:(s)=>{const wis=mod(finalStat('wis'));return`Insight/Investigation/Survival vs your enemy type: 2d20 keep highest, plus WIS ${wis>=0?'+':''}${wis}.`}},
+    'Natural Explorer (Urban)':{stat:null,body:`In city environments you can't be surprised — ambushes don't work on you. You move at full speed even while being stealthy. During downtime, information you gather is twice as useful. You know the streets better than they know themselves.`,rolls:`Passive. No roll required in urban terrain.`,modFn:(s)=>`Always active in Lythern. You treat the city as your natural habitat.`},
+    'Primeval Awareness':{stat:'wis',body:`Spend a spell slot and concentrate for 1 minute. You sense whether any creatures of your chosen Favored Enemy type are within 1 mile — though not their exact location. Costs a spell slot but gives you pre-combat intelligence that could reshape the whole session.`,rolls:`1 minute concentration. Costs 1 spell slot.`,modFn:(s)=>{const wis=mod(finalStat('wis'));return`WIS modifier ${wis>=0?'+':''}${wis} affects your spell save DC. Sense radius: 1 mile flat.`}}
+  },
+  rogue:{
+    'Sneak Attack':{stat:'dex',body:`Once per turn, if you have Advantage on the attack OR an ally is within 5ft of the target, you deal extra damage on top of your weapon hit. At Level 1 that's +1d6. It scales every two levels. The key is positioning — you don't need to be hidden, just not alone.`,rolls:`+1d6 at Level 1 (1–6 extra). Once per turn only.`,modFn:(s)=>{const dex=mod(finalStat('dex'));return`Shortsword hits at ${dex+2>=0?'+':''}${dex+2}. On Sneak Attack: 1d6${dex>=0?'+':''}${dex} + 1d6 = ${2+dex}–${12+dex} total damage.`}},
+    'Uncanny Dodge':{stat:null,body:`When something hits you and you can see the attacker, use your reaction to halve the damage — no roll required, it just happens. You haven't dodged, exactly. You've moved just enough to take a glancing blow instead of the full hit.`,rolls:`Reaction. Halves incoming damage. Once per round.`,modFn:(s)=>`No stat check. If you can see the attacker and they hit you — half damage, automatically.`},
+    'Cunning Action':{stat:'dex',body:`As a bonus action every turn, choose one: Dash (double your movement this turn), Disengage (moving away doesn't trigger attacks of opportunity), or Hide (make a Stealth check to disappear mid-fight). This is what makes Rogues slippery — you always have a free escape route.`,rolls:`Bonus action. Dash, Disengage, or Stealth check to Hide.`,modFn:(s)=>{const dex=mod(finalStat('dex'));return`Stealth check to Hide: d20${dex>=0?'+':''}${dex}${S.trainedSkills.includes('Stealth')?'+2 (trained)':''}. High roll = effectively invisible until you attack.`}},
+    "Thieves' Cant":{stat:null,body:`Passive. You know the secret language of Lythern's criminal networks — spoken phrases, coded signals, chalk marks on walls. Other criminals recognise you as one of them. Information flows toward you that never reaches anyone else in the party.`,rolls:`No roll required. Passive communication ability.`,modFn:(s)=>`No stat dependency. Roleplay tool — your GM will use this.`}
+  },
+  wizard:{
+    'Arcane Recovery':{stat:'int',body:`Once per day during a short rest, you recover expended spell slots. The total level of slots recovered can't exceed half your Wizard level (rounded up) — so at Level 1, you recover one 1st-level slot. It's a free extra spell mid-day without needing a full rest.`,rolls:`1/day on short rest. Recover slots up to Level 1 at Wizard Level 1.`,modFn:(s)=>`Recover 1 first-level spell slot per day on a short rest. At higher levels this scales significantly.`},
+    'Spellcasting (Intelligence)':{stat:'int',body:`Your spells hit based on your INT modifier. Your Spell Attack Bonus is INT + Proficiency. Your Spell Save DC — the number enemies must beat to resist your spells — is 8 + INT + Proficiency. Every point of INT makes your magic harder to dodge and more likely to land.`,rolls:`Spell Attack: d20 + INT + Prof. Spell DC: 8 + INT + Prof.`,modFn:(s)=>{const int=mod(finalStat('int'));const dc=8+int+2;return`Your Spell Attack Bonus: ${int+2>=0?'+':''}${int+2}. Your Spell Save DC: ${dc}. Enemies need ${dc}+ to resist your spells.`}},
+    'School Savant':{stat:null,body:`Pick one school of magic — Evocation for damage, Illusion for deception, Abjuration for protection, etc. Spells from that school cost half the gold and half the time to copy into your spellbook. Over a campaign, this compounds into a significant advantage.`,rolls:`Passive. Halved transcription cost for chosen school.`,modFn:(s)=>`No roll. Pick a school that matches your playstyle and watch your spellbook grow faster than any other Wizard.`},
+    'Ritual Casting':{stat:'int',body:`Spells with the [Ritual] tag can be cast without spending a spell slot — they just take 10 extra minutes. Detect Magic, Identify, Alarm, Comprehend Languages. Outside of combat, this makes a Wizard extraordinarily useful without burning any resources.`,rolls:`No spell slot used. +10 minutes casting time.`,modFn:(s)=>`Free casts outside combat. Your INT modifier ${mod(finalStat('int'))>=0?'+':''}${mod(finalStat('int'))} still applies to any relevant checks.`}
+  },
+  sorcerer:{
+    'Metamagic':{stat:'cha',body:`Metamagic lets you bend spells using Sorcery Points. Twinned Spell hits two targets instead of one. Quickened Spell lets you cast as a bonus action, freeing your action for something else. Subtle Spell removes all verbal and somatic components — guards can't tell you cast anything.`,rolls:`Costs 1–2 Sorcery Points per use. 2 points at Level 1.`,modFn:(s)=>{const cha=mod(finalStat('cha'));return`Your spell attack bonus: ${cha+2>=0?'+':''}${cha+2}. Twinning a spell costs 1 point and effectively doubles your turn's output.`}},
+    'Spellcasting (Charisma)':{stat:'cha',body:`Your spells use CHA. No preparation needed — you wake up knowing every spell in your list and can cast any of them, limited only by spell slots. Fewer total spells than a Wizard, but always ready.`,rolls:`Spell Attack: d20 + CHA + Prof. Spell DC: 8 + CHA + Prof.`,modFn:(s)=>{const cha=mod(finalStat('cha'));const dc=8+cha+2;return`Spell Attack Bonus: ${cha+2>=0?'+':''}${cha+2}. Spell Save DC: ${dc}. Enemies must roll ${dc}+ to resist your spells.`}},
+    'Sorcery Points':{stat:null,body:`Sorcery Points fuel your Metamagic. At Level 1 you have 2. You can also convert spell slots into points (1 point per slot level) or points into slots (2 points for a 1st-level slot). Managing this trade-off mid-combat is the art of playing Sorcerer well.`,rolls:`2 points at Level 1. Recharge on long rest.`,modFn:(s)=>`Convert a 1st-level slot to 1 Sorcery Point, or spend 2 points to regain a 1st-level slot. Plan ahead.`},
+    'Font of Magic':{stat:null,body:`The conversion engine for Sorcery Points and spell slots. Flexible mid-combat economy — if you're out of good slots, convert points. If you need Metamagic but are short on points, convert a slot. It makes a Sorcerer more resilient across long days than most casters.`,rolls:`Passive conversion ability.`,modFn:(s)=>`1 spell slot (1st level) = 1 Sorcery Point. 2 Sorcery Points = 1 new 1st-level slot.`}
+  },
+  warlock:{
+    'Eldritch Blast':{stat:'cha',body:`Your core cantrip — it never goes away and never costs a spell slot. At Level 1, one beam of force damage. At Level 5, two beams. Your Invocations can add push, pull, slow, or frighten effects to every beam. It's the most customisable basic attack in the game.`,rolls:`Ranged spell attack. 1d10 force damage per beam (1–10).`,modFn:(s)=>{const cha=mod(finalStat('cha'));return`Attack roll: d20${cha+2>=0?'+':''}${cha+2}. Damage: 1d10${cha>=0?'+':''}${cha} per beam (${1+cha}–${10+cha}). No spell slot cost.`}},
+    'Invocations':{stat:'cha',body:`Permanent passive upgrades to your abilities. Agonising Blast adds your CHA modifier to Eldritch Blast damage. Devil's Sight gives you 120ft vision in magical darkness. Mask of Many Faces lets you disguise yourself at will for free. You choose 2 at Level 2.`,rolls:`Passive. Always active once chosen.`,modFn:(s)=>{const cha=mod(finalStat('cha'));return`Agonising Blast adds ${cha>=0?'+':''}${cha} to every blast beam — at your CHA that's ${1+cha}–${10+cha} per beam instead of 1–10.`}},
+    'Pact Magic':{stat:'cha',body:`You have fewer spell slots than other casters but they recharge on a short rest — not just a long rest. Two short rests per day means potentially 3 full sets of slots. In practice this means a Warlock who rests smartly outruns most casters on total spells cast per day.`,rolls:`Slots recharge on short rest (1 hour).`,modFn:(s)=>{const cha=mod(finalStat('cha'));const dc=8+cha+2;return`Spell Save DC: ${dc}. Spell Attack: ${cha+2>=0?'+':''}${cha+2}. Short rest = full slot recovery.`}},
+    'Mystic Arcanum':{stat:null,body:`At higher levels your Patron grants you one powerful spell per day at no cost — a 6th, 7th, 8th, or 9th level spell that bypasses your normal slot limits. At Level 1 this is still ahead of you, but it shapes the character you're building toward.`,rolls:`1 use per long rest, unlocks at Level 11+.`,modFn:(s)=>`Not yet available at Level 1. Plan ahead — your Patron's gift scales with you.`}
+  },
+  cleric:{
+    'Channel Divinity':{stat:'wis',body:`Once per short rest, choose one of two effects: Turn Undead (undead within 30ft that can see you must flee unless they pass a WIS save) or your Domain power. Life Domain clerics heal an ally for 2d6 + WIS. Trickery clerics create an illusory duplicate. The domain defines what Channel Divinity does.`,rolls:`1 use per short rest. Turn Undead: WIS save vs DC 8+WIS+Prof.`,modFn:(s)=>{const wis=mod(finalStat('wis'));const dc=8+wis+2;return`Turn Undead DC: ${dc}. Life Domain heal: 2d6${wis>=0?'+':''}${wis} (${2+wis}–${12+wis} HP restored).`}},
+    'Spellcasting (Wisdom)':{stat:'wis',body:`Your spells use WIS. You prepare a list each long rest from the full Cleric spell list — WIS modifier + Cleric level spells ready at any time. Domain spells are always prepared on top of that. You are the most reliable healer and utility caster at the table.`,rolls:`Spell Attack: d20 + WIS + Prof. Spell DC: 8 + WIS + Prof.`,modFn:(s)=>{const wis=mod(finalStat('wis'));const dc=8+wis+2;return`Spell Attack: ${wis+2>=0?'+':''}${wis+2}. Spell Save DC: ${dc}. Healing Word (bonus action): 1d4${wis>=0?'+':''}${wis} HP (${1+wis}–${4+wis}).`}},
+    'Domain Feature':{stat:'wis',body:`Each Domain gives a bonus feature. Life Domain grants Heavy Armour proficiency — you fight in full plate without penalty. Trickery Domain grants a bonus action illusion that copies you exactly. The domain shapes your entire identity as a Cleric.`,rolls:`Passive domain benefit. Always active.`,modFn:(s)=>`No roll. Armour proficiency or duplicate — both change how you move through every encounter.`},
+    'Ritual Casting':{stat:'wis',body:`Spells tagged [Ritual] can be cast without a spell slot — just 10 extra minutes. Detect Magic, Ceremony, Commune (at higher levels). Outside combat you are continuously useful without spending anything. A full adventuring day barely dents your resources.`,rolls:`No slot used. +10 minutes cast time.`,modFn:(s)=>{const wis=mod(finalStat('wis'));return`WIS modifier ${wis>=0?'+':''}${wis} applies to ritual spell checks. Free casts outside combat.`}}
+  },
+  druid:{
+    'Wild Shape':{stat:'wis',body:`As an action, transform into any beast you've seen with a CR up to 1/4 (at Level 2). You use the beast's HP — when those run out you revert to your real form, still with your original HP. Use it to scout as a rat, tank as a wolf, or just absorb damage cheaply. Twice per short rest.`,rolls:`2 uses per short rest. Beast CR up to 1/4 at Druid Level 2.`,modFn:(s)=>{const wis=mod(finalStat('wis'));return`Beast attacks use the beast's stats, not yours. Your WIS modifier ${wis>=0?'+':''}${wis} applies to concentration spells while transformed.`}},
+    'Spellcasting (Wisdom)':{stat:'wis',body:`Prepare spells fresh each long rest from the full Druid list — WIS + Druid level prepared. The list changes daily, making you the most adaptable caster at the table. Coming into a dungeon: take fire and lightning. Urban investigation: take Detect Magic and Speak with Animals.`,rolls:`Spell Attack: d20 + WIS + Prof. Spell DC: 8 + WIS + Prof.`,modFn:(s)=>{const wis=mod(finalStat('wis'));const dc=8+wis+2;return`Spell Attack: ${wis+2>=0?'+':''}${wis+2}. Spell Save DC: ${dc}. Adjust daily prep to whatever the session demands.`}},
+    "Nature's Recovery":{stat:null,body:`Once per day during a short rest, recover spell slots up to half your Druid level. At Level 1 that's one 1st-level slot back. Like the Wizard's Arcane Recovery — a free mid-day top-up that keeps you casting without burning a full 8-hour rest.`,rolls:`1/day short rest. Recover 1st-level slot at Druid Level 1.`,modFn:(s)=>`Free slot recovery. No roll needed. Use your short rest.`},
+    'Druidic':{stat:null,body:`Passive. You speak the secret language of the Druid order — spoken and as hidden signs carved into surfaces, tied into plants, marked in mud. Other Druids recognise you as one of them. Information, shelter, and aid from the natural world flows toward those who know the signs.`,rolls:`No roll. Passive communication and recognition.`,modFn:(s)=>`No stat dependency. A roleplay and exploration tool your GM will lean into.`}
+  },
+  bard:{
+    'Bardic Inspiration':{stat:'cha',body:`As a bonus action, give one creature within 60ft a d6 Inspiration die. They can add it to any attack roll, ability check, or saving throw within the next 10 minutes — their choice when to use it. You have CHA modifier uses per long rest, refreshing on rests.`,rolls:`Bonus action. +1d6 to any one roll within 10 minutes.`,modFn:(s)=>{const cha=mod(finalStat('cha'));const uses=Math.max(1,cha);return`Uses per long rest: ${uses} (= CHA mod ${cha>=0?'+':''}${cha}, minimum 1). The d6 bonus applies after the main roll is seen.`}},
+    'Cutting Words':{stat:'cha',body:`When an enemy makes an attack roll, ability check, or damage roll within 60ft that you can see, use your REACTION to subtract your Bardic die from their result. Costs one Inspiration die. You can turn a hit into a miss or a kill blow into a survivable wound.`,rolls:`Reaction. Subtracts 1d6 from enemy roll. Costs 1 Bardic die.`,modFn:(s)=>{const cha=mod(finalStat('cha'));return`Subtract 1d6 (1–6) from their roll. Against an enemy with +5 attack vs your AC of ${10+mod(finalStat('dex'))}, this meaningfully changes outcomes.`}},
+    'Jack of All Trades':{stat:null,body:`Passive. Any skill check you make that you're not fully proficient in still gets half your proficiency bonus added to it — round down. At Level 1 with +2 proficiency that's +1 on everything. It makes you the most competent generalist at the table.`,rolls:`Always active. +1 bonus at Level 1 to all non-proficient checks.`,modFn:(s)=>`+1 to every skill you don't have full training in. Stacks on top of your stat modifiers.`},
+    'Song of Rest':{stat:'cha',body:`During a short rest, if your allies can hear you, each one regains extra HP when they spend Hit Dice to heal. At Bard Level 1 they regain 1d6 extra. It costs you nothing — just be present and performing during the rest period.`,rolls:`+1d6 extra HP per Hit Die spent during short rest.`,modFn:(s)=>{const cha=mod(finalStat('cha'));return`No roll from you. Your allies' healing is simply boosted by 1d6 per Hit Die during every short rest.`}}
+  }
+};
+
+window.closeSkillModal=function(){
+  document.getElementById('skill-modal-overlay').classList.remove('show');
+};
+
+function buildTipContent(classId, skillName, isCustom){
+  if(isCustom) return null;
+  const classData = SKILL_TIP_DATA[classId];
+  if(!classData) return null;
+  const data = classData[skillName];
+  if(!data) return null;
+  const modLine = data.modFn ? data.modFn(S) : '';
+  return {name:skillName, body:data.body, range:data.rolls, modLine};
+}
+
+// PC tooltip logic
+const tipBox = ()=>document.getElementById('skill-tip-box');
+let tipHideTimer=null;
+
+function showTip(el, classId, skillName, isCustom){
+  const t = tipBox(); if(!t) return;
+  const content = buildTipContent(classId, skillName, isCustom);
+  if(!content){ hideTip(); return; }
+  clearTimeout(tipHideTimer);
+  document.getElementById('stb-name').textContent = content.name;
+  document.getElementById('stb-body').textContent = content.body;
+  document.getElementById('stb-range').textContent = content.range;
+  document.getElementById('stb-mod-line').textContent = content.modLine;
+  t.style.display='block';
+  // position near cursor — updated on mousemove
+  t.classList.add('visible');
+}
+function hideTip(){
+  const t=tipBox();if(!t)return;
+  t.classList.remove('visible');
+  tipHideTimer=setTimeout(()=>{t.style.display='none';},200);
+}
+document.addEventListener('mousemove',e=>{
+  const t=tipBox();if(!t||!t.classList.contains('visible'))return;
+  const pad=14;
+  let x=e.clientX+pad, y=e.clientY+pad;
+  if(x+290>window.innerWidth) x=e.clientX-290-pad;
+  if(y+320>window.innerHeight) y=e.clientY-320-pad;
+  t.style.left=x+'px'; t.style.top=y+'px';
+});
+
+// Mobile hold logic
+let holdTimer=null, holdTarget=null;
+function startHold(el, classId, skillName, isCustom){
+  if(isCustom) return;
+  const ring = el.querySelector('.hold-ring');
+  if(ring){ring.classList.add('active');}
+  holdTarget={classId,skillName,isCustom};
+  holdTimer=setTimeout(()=>{
+    showMobileModal(classId,skillName,isCustom);
+    if(ring)ring.classList.remove('active');
+  },5000);
+}
+function cancelHold(el){
+  clearTimeout(holdTimer);holdTimer=null;
+  const ring=el.querySelector('.hold-ring');
+  if(ring)ring.classList.remove('active');
+}
+function showMobileModal(classId, skillName, isCustom){
+  const content=buildTipContent(classId,skillName,isCustom);
+  if(!content)return;
+  document.getElementById('sm-name').textContent=content.name;
+  document.getElementById('sm-body').textContent=content.body;
+  document.getElementById('sm-range').textContent=content.range;
+  document.getElementById('sm-mod-line').textContent=content.modLine;
+  const ov=document.getElementById('skill-modal-overlay');
+  ov.style.display='flex';
+  requestAnimationFrame(()=>requestAnimationFrame(()=>ov.classList.add('show')));
+}
+
+function renderFinalSheet(){
+  const race=RACES.find(r=>r.id===S.race),cls=CLASSES.find(c=>c.id===S.classId);
+  if(!race||!cls){document.getElementById('final-sheet-content').innerHTML='<div class="warn-box">Missing data. Please start over.</div>';return;}
+  const allItems=[...race.items,...cls.items];
+  const hp=calcHP(),acBase=10+mod(finalStat('dex')),initVal=mod(finalStat('dex'));
+  const speed=getSpeed(),passPerc=getPassivePerception();
+
+  const raceCol=RACE_COLORS[S.race]||{hex:'#9c9c9c',rgb:'156,156,156'};
+  const classCol=CLASS_COLORS[S.classId]||{hex:'#9c9c9c',rgb:'156,156,156'};
+  const sheetEl=document.getElementById('final-sheet-content');
+  sheetEl.classList.add('has-colors');
+  sheetEl.style.setProperty('--race-color',raceCol.hex);
+  sheetEl.style.setProperty('--race-color-rgb',raceCol.rgb);
+  sheetEl.style.setProperty('--class-color',classCol.hex);
+  sheetEl.style.setProperty('--class-color-rgb',classCol.rgb);
+  const tierColor={op:'var(--red)',mid:'var(--g4)',mun:'var(--g2)',custom:'var(--white)'};
+  const tierLabel={op:'OVERPOWERED',mid:'SITUATIONAL',mun:'MUNDANE',custom:'CUSTOM'};
+
+  const skills=cls.skills.map((sk, i)=>{
+    let name = sk.name;
+    let desc = sk.desc;
+    
+    if (sk.tier === 'custom') {
+      name = S.customSkill.split('—')[0]?.trim() || S.customSkill;
+      desc = S.customSkill;
+    } else if (S.swappedSkill.index === i) {
+      name = S.swappedSkill.name || 'Unnamed Custom Skill';
+      desc = S.swappedSkill.desc || '';
+      sk = { ...sk, tier: 'custom' };
+    }
+
+    const isCustomTier = sk.tier==='custom' || (S.swappedSkill.index===i);
+    const tipAttr = !isCustomTier ? 'data-tip="1"' : 'data-custom="1"';
+    const safeClass = S.classId;
+    const safeName = name.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+    const pcEnter = !isCustomTier ? 'onmouseenter="showTip(this,\'' + safeClass + '\',\'' + safeName + '\',false)" onmouseleave="hideTip()"' : '';
+    const mobileH = !isCustomTier ? 'ontouchstart="startHold(this,\'' + safeClass + '\',\'' + safeName + '\',false)" ontouchend="cancelHold(this)" ontouchcancel="cancelHold(this)"' : '';
+    const hoverHint = !isCustomTier
+      ? '<div style="font-family:var(--px);font-size:.2rem;color:var(--s5);margin-top:.3rem;letter-spacing:.06em;">HOVER FOR BREAKDOWN ↗</div>'
+      : '<div style="font-family:var(--px);font-size:.2rem;color:var(--s5);margin-top:.3rem;letter-spacing:.06em;">CUSTOM — GM DETERMINES</div>';
+    return '<div class="skill-row-sheet" style="border-left-color:'+tierColor[sk.tier]+'" '+tipAttr+' '+pcEnter+' '+mobileH+'>'
+      +'<svg class="hold-ring" viewBox="0 0 18 18"><circle cx="9" cy="9" r="7"/></svg>'
+      +'<div class="srs-tier" style="color:'+tierColor[sk.tier]+'">'+tierLabel[sk.tier]+'</div>'
+      +'<div class="srs-name">'+name+'</div>'
+      +'<div class="srs-desc">'+(desc||'').substring(0,140)+((desc||'').length>140?'…':'')+'</div>'
+      +hoverHint
+      +'</div>';
+  }).join('');
+
+  const saves=CLASS_SAVES[S.classId]||[];
+  const savesHTML=Object.keys(STAT_INFO).map(k=>{
+    const t=finalStat(k);const prof=saves.includes(k);const saveVal=mod(t)+(prof?2:0);
+    return`<div class="stat-box" style="${prof?'border-color:var(--g4);background:rgba(255,255,255,0.04)':''}">
+      <div class="sb-name">${STAT_INFO[k].label}</div>
+      <div class="sb-val" style="font-size:.78rem;color:${prof?'var(--white)':'var(--g4)'}">${saveVal>=0?'+':''}${saveVal}</div>
+      <div class="sb-mod" style="color:${prof?'var(--g4)':'var(--g2);font-size:.22rem'}">${prof?'★ PROF':'◇'}</div>
+    </div>`;
+  }).join('');
+
+  const alignData=ALIGNMENTS.find(a=>a.id===S.alignment);
+  const hasDetails=alignData||S.appearance||S.age||S.distinguishing||S.flaw||S.bond||(S.traits&&S.traits.length);
+  const rName = S.race === 'custom' ? (S.customRace.name || race.name) : race.name;
+
+  const detailsHTML=hasDetails?`<div class="sheet-sec">
+    <div class="sheet-sec-title">Character Details</div>
+    <div class="inv-grid">
+      ${alignData?`<div class="inv-pill">
+        <div class="ip-head"><span class="ip-icon">${alignData.icon}</span><span class="ip-name">${alignData.law} ${alignData.eth}</span></div>
+        <div class="ip-desc">${alignData.desc}</div>
+        <div class="ip-src">[ ALIGNMENT ]</div>
+      </div>`:''}
+      ${(S.appearance||S.age||S.distinguishing)?`<div class="inv-pill">
+        <div class="ip-head"><span class="ip-icon">👁</span><span class="ip-name">APPEARANCE</span></div>
+        ${S.age?`<div class="ip-desc">Age: ${S.age}</div>`:''}
+        ${S.appearance?`<div class="ip-desc">${S.appearance}</div>`:''}
+        ${S.distinguishing?`<div class="ip-desc">Mark: ${S.distinguishing}</div>`:''}
+      </div>`:''}
+      ${S.flaw?`<div class="inv-pill">
+        <div class="ip-head"><span class="ip-icon">⚠</span><span class="ip-name">FLAW</span></div>
+        <div class="ip-desc">${S.flaw}</div>
+      </div>`:''}
+      ${S.bond?`<div class="inv-pill">
+        <div class="ip-head"><span class="ip-icon">⛓</span><span class="ip-name">BOND</span></div>
+        <div class="ip-desc">${S.bond}</div>
+      </div>`:''}
+    </div>
+    ${S.traits&&S.traits.length?`<div style="margin-top:.65rem">
+      <div style="font-family:var(--px);font-size:.28rem;color:var(--g2);letter-spacing:.1em;margin-bottom:.35rem">PERSONALITY TRAITS</div>
+      <div class="trained-chips">${S.traits.map(t=>`<div class="trained-chip">${t}</div>`).join('')}</div>
+    </div>`:''}
+  </div>`:'';
+
+  let karmaColor = 'var(--g4)';
+  if(S.karma === 'POSITIVE') karmaColor = '#5a8a5a';
+  if(S.karma === 'NEGATIVE') karmaColor = 'var(--red)';
+
+  document.getElementById('final-sheet-content').innerHTML=`
+    <div class="sheet-nameplate">
+      <div class="sheet-name">${S.name}</div>
+      <div class="sheet-meta">${rName} · ${cls.name} · Level 1 · Lythern Field Record · Proficiency Bonus: +2</div>
+      <div style="display:flex;gap:.5rem;margin-top:.55rem;margin-bottom:.25rem;align-items:center">
+        <div style="display:flex;align-items:center;gap:.3rem;padding:.25rem .55rem;border:1px solid ${raceCol.hex};background:rgba(${raceCol.rgb},0.08)">
+          <div style="width:8px;height:8px;background:${raceCol.hex};box-shadow:0 0 6px ${raceCol.hex}"></div>
+          <span style="font-family:var(--px);font-size:.22rem;color:${raceCol.hex};letter-spacing:.08em">${rName.toUpperCase()}</span>
+        </div>
+        <div style="font-family:var(--px);font-size:.28rem;color:var(--g2)">×</div>
+        <div style="display:flex;align-items:center;gap:.3rem;padding:.25rem .55rem;border:1px solid ${classCol.hex};background:rgba(${classCol.rgb},0.08)">
+          <div style="width:8px;height:8px;background:${classCol.hex};box-shadow:0 0 6px ${classCol.hex}"></div>
+          <span style="font-family:var(--px);font-size:.22rem;color:${classCol.hex};letter-spacing:.08em">${cls.name.toUpperCase()}</span>
+        </div>
+        <div style="flex:1;height:1px;background:linear-gradient(90deg,${raceCol.hex},${classCol.hex});opacity:0.4;margin-left:.2rem"></div>
+      </div>
+      <div class="sheet-vitals">
+        <div class="vital-box hp"><div class="vital-num" style="color:var(--red)">${hp}</div><div class="vital-lbl">MAX HP</div></div>
+        <div class="vital-box"><div class="vital-num" style="color:var(--g5)">${acBase}</div><div class="vital-lbl">ARMOR CLASS</div></div>
+        <div class="vital-box"><div class="vital-num" style="color:var(--g4)">${initVal>=0?'+':''}${initVal}</div><div class="vital-lbl">INITIATIVE</div></div>
+        <div class="vital-box"><div class="vital-num" style="color:var(--white)">+2</div><div class="vital-lbl">PROF BONUS</div></div>
+        <div class="vital-box"><div class="vital-num" style="color:var(--g3);font-size:.65rem">${cls.tag.match(/d\d+/)?.[0]||'d8'}</div><div class="vital-lbl">HIT DIE</div></div>
+        <div class="vital-box"><div class="vital-num" style="color:var(--g4);font-size:.75rem">${speed}ft</div><div class="vital-lbl">SPEED</div></div>
+        <div class="vital-box"><div class="vital-num" style="color:var(--white);font-size:.75rem">${S.luck||0}</div><div class="vital-lbl">LUCK</div></div>
+        <div class="vital-box"><div class="vital-num" style="color:${karmaColor};font-size:.4rem">${S.karma||'NEUTRAL'}</div><div class="vital-lbl">KARMA</div></div>
+      </div>
+    </div>
+    <div class="sheet-sec">
+      <div class="sheet-sec-title">Ability Scores</div>
+      <div class="stats-grid">${Object.keys(STAT_INFO).map(k=>{const t=finalStat(k);return`<div class="stat-box"><div class="sb-name">${STAT_INFO[k].label}</div><div class="sb-val">${t}</div><div class="sb-mod" style="color:${mod(t)>=0?'#5a8a5a':'var(--red)'}">${modStr(t)}</div></div>`}).join('')}</div>
+    </div>
+    <div class="sheet-sec">
+      <div class="sheet-sec-title">Saving Throws</div>
+      <div class="stats-grid">${savesHTML}</div>
+    </div>
+    <div class="sheet-sec">
+      <div class="sheet-sec-title">Class Abilities — ${cls.name}</div>
+      <div class="skills-grid">${skills}</div>
+      ${CLASS_HOW_TO_PLAY[S.classId]?`<div style="margin-top:.75rem;padding:.7rem 1rem;background:rgba(0,0,0,.35);border-left:3px solid var(--g2);border-right:1px solid var(--s4);border-top:1px solid var(--s4);border-bottom:1px solid var(--s4);">
+        <div style="font-family:var(--px);font-size:.26rem;color:var(--g2);letter-spacing:.14em;margin-bottom:.4rem;">▸ HOW TO PLAY THIS CHARACTER</div>
+        <div style="font-family:var(--vt);font-size:.95rem;color:var(--g4);line-height:1.85;">${CLASS_HOW_TO_PLAY[S.classId]}</div>
+      </div>`:''}
+    </div>
+    ${S.trainedSkills.length?`<div class="sheet-sec"><div class="sheet-sec-title">Trained Skills (+2 Proficiency)</div><div class="trained-chips">${S.trainedSkills.map(s=>`<div class="trained-chip">+2 ${s.toUpperCase()}</div>`).join('')}</div></div>`:''}
+    <div class="sheet-sec">
+      <div class="sheet-sec-title">Starting Inventory — ${allItems.length} Items</div>
+      <div class="inv-grid">${allItems.map(it=>`<div class="inv-pill"><div class="ip-head"><span class="ip-icon">${it.icon}</span><span class="ip-name">${it.name}</span></div><div class="ip-desc">${it.desc}</div><div class="ip-src">[ ${it.src} ]</div></div>`).join('')}</div>
+    </div>
+    ${detailsHTML}
+    ${S.lore?`<div class="sheet-sec"><div class="sheet-sec-title">Origin — How You Ended Up In Lythern</div><div class="lore-final"><div class="lore-final-text">${S.lore}</div></div></div>`:''}
+    <div class="sheet-footer-bar">
+      <div class="sheet-footer-lore">LOW//LIFE — Character Record · Lythern Field Archive · Level 1</div>
+      <div style="font-family:var(--px);font-size:.26rem;color:var(--g2);text-align:right">${S.race === 'custom' ? S.customRace.desc : race.tag.replace('RACIAL BONUS: ','')}<br>${cls.tag}</div>
+    </div>`;
+}
+
+// ── Clipboard ──
+function copySheetToClipboard(){
+  const race=RACES.find(r=>r.id===S.race),cls=CLASSES.find(c=>c.id===S.classId);
+  if(!race||!cls)return;
+  const allItems=[...race.items,...cls.items];
+  const hp=calcHP(),acBase=10+mod(finalStat('dex')),initVal=mod(finalStat('dex'));
+  const statBlock=Object.keys(STAT_INFO).map(k=>`${STAT_INFO[k].label}: ${finalStat(k)} (${modStr(finalStat(k))})`).join(' | ');
+  const saves=CLASS_SAVES[S.classId]||[];
+  const saveBlock=Object.keys(STAT_INFO).map(k=>{const t=finalStat(k);const prof=saves.includes(k);const sv=mod(t)+(prof?2:0);return`${STAT_INFO[k].label}: ${sv>=0?'+':''}${sv}${prof?' ★':''}`}).join(' | ');
+  
+  const skillBlock=cls.skills.map((sk, i)=>{
+    let n = sk.name;
+    let t = sk.tier.toUpperCase();
+    if (sk.tier === 'custom') n = S.customSkill || sk.name;
+    else if (S.swappedSkill.index === i) { n = S.swappedSkill.name || 'Custom Skill'; t = 'CUSTOM (REPLACED)'; }
+    return`[${t}] ${n}`;
+  }).join('\n');
+  
+  const rName = S.race === 'custom' ? (S.customRace.name || race.name) : race.name;
+  const invBlock=allItems.map(it=>`${it.icon} ${it.name} — ${it.desc}`).join('\n');
+  const trained=S.trainedSkills.length?`Trained Skills: ${S.trainedSkills.join(', ')}\n`:'';
+  const alignData=ALIGNMENTS.find(a=>a.id===S.alignment);
+  const alignStr=alignData?`Alignment: ${alignData.law} ${alignData.eth}\n`:'';
+  const fateStr=`Luck: ${S.luck || 0} | Karma: ${S.karma || 'NEUTRAL'}\n`;
+  const traitsStr=S.traits&&S.traits.length?`Traits: ${S.traits.join(' | ')}\n`:'';
+  const flawStr=S.flaw?`Flaw: ${S.flaw}\n`:'';
+  const bondStr=S.bond?`Bond: ${S.bond}\n`:'';
+  const physStr=(S.appearance||S.age||S.distinguishing)?`Appearance: ${[S.age,S.appearance,S.distinguishing].filter(Boolean).join(' · ')}\n`:'';
+  const loreBlock=S.lore?`\n--- BACKSTORY ---\n${S.lore}\n`:'';
+  const text=`LOW//LIFE — CHARACTER RECORD\n${'='.repeat(40)}\n${S.name}\n${rName} · ${cls.name} · Level 1 · Lythern\nProficiency Bonus: +2  |  Speed: ${getSpeed()}ft  |  Passive Perception: ${getPassivePerception()}\n\nHP: ${hp}  |  AC: ${acBase}  |  Initiative: ${initVal>=0?'+':''}${initVal}\nHit Die: ${cls.tag.match(/d\d+/)?.[0]||'d8'}  |  ${cls.tag}\n\n--- ABILITY SCORES ---\n${statBlock}\n\n--- SAVING THROWS ---\n${saveBlock}\n\n${fateStr}${trained}${alignStr}${physStr}${traitsStr}${flawStr}${bondStr}\n--- CLASS ABILITIES ---\n${skillBlock}\n\n--- INVENTORY ---\n${invBlock}\n\n${S.race==='custom'?S.customRace.desc:race.tag}${loreBlock}\n[Generated by LOW//LIFE Character Creator]`;
+  navigator.clipboard.writeText(text).then(()=>{
+    const btn=document.getElementById('copy-btn');
+    if(btn){btn.textContent='✓ COPIED TO CLIPBOARD';setTimeout(()=>{btn.textContent='⎘ COPY FOR DISCORD';},2000);}
+  }).catch(()=>alert('Copy failed — use Print instead.'));
+}
+
+// ── Random Name ──
+function randomName(){
+  const n=LYTHERN_NAMES[Math.floor(Math.random()*LYTHERN_NAMES.length)];
+  document.getElementById('inp-name').value=n;S.name=n;playSFX('select');
+  const btn=document.getElementById('rng-name-btn');
+  if(btn){btn.textContent='↺ ANOTHER';setTimeout(()=>{btn.textContent='↺ RANDOM NAME';},1200);}
+}
+
+// ── Restart ──
+function restart(){
+  S={page:0,name:'',race:null,classId:null,customSkill:'',lore:'',stats:{str:8,dex:8,con:8,int:8,wis:8,cha:8},trainedSkills:[],alignment:null,traits:[],appearance:'',age:'',distinguishing:'',flaw:'',bond:'', customRace:{name:'', stat:'str', desc:''}, swappedSkill:{index:-1, name:'', desc:''}, luck: null, karma: 'NEUTRAL'};
+  try{localStorage.removeItem('lowlife_char');}catch(e){}
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelector('[data-page="0"]').classList.add('active');
+  S.page=0;renderNav();window.scrollTo({top:0,behavior:'smooth'});
+  const startBtn=document.getElementById('start-click-overlay');
+  startBtn.classList.remove('moved-up');startBtn.style.cursor='pointer';startBtn.onclick=runIntro;
+  document.getElementById('click-to-begin').style.opacity='1';
+  document.getElementById('intro-lore-block').classList.remove('visible');
+  document.getElementById('intro-lore-block').innerHTML='';
+  document.getElementById('intro-btn-wrap').classList.remove('visible');
+  if(window._scrollSideTimer)clearInterval(window._scrollSideTimer);
+  const wrap2=document.getElementById('scroll-wrap');if(wrap2)wrap2.classList.remove('sealed');
+  const rTopEl=document.getElementById('scroll-edge-top');if(rTopEl){rTopEl.style.transition='none';rTopEl.style.transform='scaleX(0)';}
+  const rLeft=document.getElementById('scroll-edge-left');if(rLeft){rLeft.style.transition='none';rLeft.style.height='0';}
+  const rRight=document.getElementById('scroll-edge-right');if(rRight){rRight.style.transition='none';rRight.style.height='0';}
+  const pp=document.getElementById('creation-popup');if(pp){pp.style.transition='none';pp.style.transform='scale(0.5) translateY(40px)';pp.style.opacity='0';}
+  const pb=document.getElementById('popup-scanline');if(pb)pb.style.animation='none';
+  const pbb=document.getElementById('begin-btn');if(pbb)pbb.style.animation='none';
+  const phdr=document.getElementById('popup-header');if(phdr)phdr.style.animation='none';
+  document.getElementById('resume-toast').classList.remove('show');
+  introComplete=false;introRunning=false;
+  window.location.hash='';
+}
+
+// ── Init from URL hash ──
+(function initFromHash(){
+  const hash=window.location.hash;
+  if(!hash.startsWith('#char='))return;
+  const decoded=decodeState(hash.slice(6));
+  if(!decoded)return;
+  Object.assign(S,decoded);
+  introComplete=true;
+  setTimeout(()=>goTo(S.page||7),200);
+})();
+
+renderNav();
+</script>
+</body>
+</html>
